@@ -9,8 +9,8 @@ include $(ICU_INC)
 
 all: $(TARGET)
 
-toy: $(OBJECTS)
-	$(LINK.cc) -o $@ $^ toy.o $(ICULIBS) $(ICULIBS_ICUIO)
+toy: $(OBJECTS) toy.o
+	$(LINK.cc) -o $@ $^ $(ICULIBS) $(ICULIBS_ICUIO)
 
 clean:
 	rm -f *.o $(TARGET) 

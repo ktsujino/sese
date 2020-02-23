@@ -21,10 +21,17 @@ void compareSeq(const std::vector<UnicodeString> &expected,
   }
 }
 
-TEST(Tokenizer, First) {
+TEST(Tokenizer, NotNormalized) {
   sese::Tokenizer tokenizer;
   std::vector<UnicodeString> tokenized = tokenizer.tokenize("I love NY!");
   std::vector<UnicodeString> expected = usVector({"I", " ", "love", " ", "NY", "!"});
+  compareSeq(expected, tokenized);
+}
+
+TEST(Tokenizer, Normalized) {
+  sese::Tokenizer tokenizer;
+  std::vector<UnicodeString> tokenized = tokenizer.tokenize("She loves NY guys!", true);
+  std::vector<UnicodeString> expected = usVector({"she", "lov", "ny", "guy", "!"});
   compareSeq(expected, tokenized);
 }
 

@@ -12,10 +12,11 @@ class Tokenizer {
 public:
   Tokenizer(icu::Locale locale=icu::Locale::getRoot());
   ~Tokenizer();
-  std::vector<UnicodeString> tokenize(std::string str);
+  std::vector<UnicodeString> tokenize(std::string utf8str, bool enable_normalize=false);
+  std::vector<UnicodeString> normalize(std::vector<UnicodeString> tokens);
 
 private:
-  icu::BreakIterator* bi;
+  icu::BreakIterator* bi_;
 };
 
 } // namespace sese
