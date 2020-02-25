@@ -3,6 +3,7 @@
 
 #include <vector>
 
+#include <unicode/unistr.h>
 #include <unicode/rbbi.h>
 
 namespace sese {
