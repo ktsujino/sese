@@ -2,7 +2,7 @@ GTEST_PREFIX=/usr/local
 ICU_PREFIX=/usr/local/opt/icu4c
 ICU_INC=$(ICU_PREFIX)/lib/icu/Makefile.inc
 TARGET=toy tester
-OBJECTS=tokenizer.o
+OBJECTS=tokenizer.o lexicon.o
 TEST_OBJECTS=tester.o
 
 include $(ICU_INC)
@@ -13,7 +13,7 @@ toy: $(OBJECTS) toy.o
 	$(LINK.cc) -o $@ $^ $(ICULIBS) $(ICULIBS_ICUIO)
 
 clean:
-	rm -f *.o $(TARGET) 
+	rm -f *.o *~ $(TARGET)
 
 test: tester
 	./tester
