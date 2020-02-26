@@ -19,8 +19,8 @@ public:
   int token2id(const UnicodeString &token);
   UnicodeString id2token(const int id);
 
-  static const int kOutOfVocabularyId;
-  static const UnicodeString kOutOfVocabularyToken;
+  static const int outOfVocabularyId();
+  static const UnicodeString outOfVocabularyToken();
 
   friend class LexiconBuilder;
   FRIEND_TEST(Lexicon, conversion);

@@ -40,7 +40,7 @@ int Lexicon::token2id(const UnicodeString &token) {
   if (token2id_.count(token) > 0) {
     return token2id_[token];
   } else {
-    return Lexicon::kOutOfVocabularyId;
+    return Lexicon::outOfVocabularyId();
   }
 }
 
@@ -48,13 +48,19 @@ UnicodeString Lexicon::id2token(const int id) {
   if (id2token_.count(id) > 0) {
     return id2token_[id];
   } else {
-    return Lexicon::kOutOfVocabularyToken;
+    return Lexicon::outOfVocabularyToken();
   }
 }
 
-const int Lexicon::kOutOfVocabularyId = -1;
+const int Lexicon::outOfVocabularyId() {
+  static const int oovId = 0;
+  return oovId;
+}
 
-const UnicodeString Lexicon::kOutOfVocabularyToken("__OOV__");
+const UnicodeString Lexicon::outOfVocabularyToken() {
+  static const UnicodeString oovToken = UnicodeString::fromUTF8("__OOV__");
+  return oovToken;
+}
 
 Lexicon::Lexicon() {
 }
