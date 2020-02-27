@@ -9,14 +9,13 @@
 
 namespace sese {
 
-Lexicon::Lexicon(const std::string &lexicon_file) {
-  load(lexicon_file);
+Lexicon::Lexicon(std::istream &ist) {
+  load(ist);
 }
 
-void Lexicon::save(const std::string &lexicon_file) {
-  std::ofstream ofs(lexicon_file);
+void Lexicon::save(std::ostream &ost) {
   for (std::pair<UnicodeString, int> entry : token2id_) {
-    ofs << entry.first << entry.second << std::endl;
+    ost << entry.first << "\t" << entry.second << std::endl;
   }
 }
 
@@ -53,7 +52,7 @@ UnicodeString Lexicon::id2token(const int id) {
 }
 
 const int Lexicon::outOfVocabularyId() {
-  static const int oovId = 0;
+  static const int oovId = -1;
   return oovId;
 }
 
@@ -70,14 +69,29 @@ void Lexicon::setEntry(const UnicodeString &token, const int id) {
   id2token_[id] = token;
 }
 
-void Lexicon::load(const std::string &lexicon_file) {
-  std::ifstream ifs(lexicon_file);
+void Lexicon::load(std::istream &ist) {
   UnicodeString token;
   int id;
-  while (ifs >> token >> id) {
+  while (ist >> token >> id) {
     setEntry(token, id);
   }
 }
 
+std::vector<int> LexiconBuilder::readTokens(const std::vector<UnicodeString> &tokens) {
+  std::vector<int> ids;
+  for (const UnicodeString &token: tokens) {
+    if (lexicon_.token2id_.count(token) ==  0) {
+      int new_id = lexicon_.token2id_.size();
+      lexicon_.token2id_[token] = new_id;
+      lexicon_.id2token_[new_id] = token;
+    }
+    ids.push_back(lexicon_.token2id_[token]);
+  }
+  return ids;
+}
+
+Lexicon LexiconBuilder::getLexicon() {
+  return lexicon_;
+}
 
 } // namespace sese

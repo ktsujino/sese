@@ -1,9 +1,12 @@
 #include "tokenizer.h"
 #include "lexicon.h"
 
+#include <cstdio>
+#include <fstream>
 #include <vector>
 
 #include <unicode/rbbi.h>
+#include <unicode/ustream.h>
 
 #include <gtest/gtest.h>
 
@@ -55,11 +58,56 @@ TEST(Lexicon, conversion) {
   EXPECT_EQ(Lexicon::outOfVocabularyToken(), lexicon.id2token(2));
 
   std::vector<UnicodeString> tokens({foo, bar, baz});
-  std::vector<int> ids({0, 1, Lexicon::outOfVocabularyId()});
-  std::vector<UnicodeString> revTokens({foo, bar, Lexicon::outOfVocabularyToken()});
+  std::vector<int> expected_ids({0, 1, Lexicon::outOfVocabularyId()});
+  std::vector<UnicodeString> expected_backtranslated_tokens({foo, bar, Lexicon::outOfVocabularyToken()});
 
-  assertVectorEqual(ids, lexicon.tokens2ids(tokens));
-  assertVectorEqual(revTokens, lexicon.ids2tokens(ids));
+  std::vector<int> actual_ids = lexicon.tokens2ids(tokens);
+  assertVectorEqual(expected_ids, actual_ids);
+  std::vector<UnicodeString> actual_backtranslated_tokens = lexicon.ids2tokens(actual_ids);
+  assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
+}
+
+TEST(Lexicon, save_and_load) {
+  LexiconBuilder lexicon_builder;
+  std::vector<UnicodeString> corpus = usVector({"foo", "bar", "foo"});
+  lexicon_builder.readTokens(corpus);
+  Lexicon generated_lexicon = lexicon_builder.getLexicon();
+
+  std::string lexicon_file_name = "/tmp/test_lexicon_save_and_load.lexicon";
+  std::ofstream ofs(lexicon_file_name);
+  generated_lexicon.save(ofs);
+  ofs.close();
+
+  std::ifstream ifs(lexicon_file_name);
+  Lexicon loaded_lexicon(ifs);
+  
+  std::vector<UnicodeString> query = usVector({"foo", "bar", "baz"});
+  std::vector<int> expected_ids_lexicon({0, 1, Lexicon::outOfVocabularyId()});
+  std::vector<UnicodeString> expected_backtranslated_tokens({query[0], query[1], Lexicon::outOfVocabularyToken()});
+
+  std::vector<int> actual_ids_lexicon = loaded_lexicon.tokens2ids(query);
+  assertVectorEqual(expected_ids_lexicon, actual_ids_lexicon);
+  std::vector<UnicodeString> actual_backtranslated_tokens = loaded_lexicon.ids2tokens(actual_ids_lexicon);
+  assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
+}
+  
+TEST(LexiconBuilder, read_and_get_lexicon) {
+  LexiconBuilder lexicon_builder;
+  std::vector<UnicodeString> corpus = usVector({"foo", "bar", "foo"});
+  std::vector<int> expected_ids_builder({0, 1, 0});
+
+  std::vector<int> actual_ids_builder = lexicon_builder.readTokens(corpus);
+  assertVectorEqual(expected_ids_builder, actual_ids_builder);
+
+  Lexicon lexicon = lexicon_builder.getLexicon();
+  std::vector<UnicodeString> query = usVector({"foo", "bar", "baz"});
+  std::vector<int> expected_ids_lexicon({0, 1, Lexicon::outOfVocabularyId()});
+  std::vector<UnicodeString> expected_backtranslated_tokens({query[0], query[1], Lexicon::outOfVocabularyToken()});
+
+  std::vector<int> actual_ids_lexicon = lexicon.tokens2ids(query);
+  assertVectorEqual(expected_ids_lexicon, actual_ids_lexicon);
+  std::vector<UnicodeString> actual_backtranslated_tokens = lexicon.ids2tokens(actual_ids_lexicon);
+  assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
 }
 
 } // namespace sese

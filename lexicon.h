@@ -1,6 +1,7 @@
 #ifndef _SESS_LEXICON_H_
 #define _SESS_LEXICON_H_
 
+#include <iostream>
 #include <map>
 #include <vector>
 
@@ -12,8 +13,8 @@ namespace sese {
 // Converts word list into word ID list
 class Lexicon {
 public:
-  Lexicon(const std::string &lexicon_file);
-  void save(const std::string &lexicon_file);
+  Lexicon(std::istream &ist);
+  void save(std::ostream &ost);
   std::vector<int> tokens2ids(const std::vector<UnicodeString> &tokens);
   std::vector<UnicodeString> ids2tokens(const std::vector<int> &ids);
   int token2id(const UnicodeString &token);
@@ -28,10 +29,20 @@ public:
 
 private:
   Lexicon(); // only to be used from friends
-  void load(const std::string &lexicon_file);
+  void load(std::istream &ist);
   void setEntry(const UnicodeString &token, const int id);
   std::map<UnicodeString, int> token2id_;
   std::map<int, UnicodeString> id2token_;
+};
+
+// Constructs Lexicon from corpus
+class LexiconBuilder {
+public:
+  std::vector<int> readTokens(const std::vector<UnicodeString> &tokens);
+  Lexicon getLexicon();
+
+private:
+  Lexicon lexicon_;
 };
 
 } // namespace sese
