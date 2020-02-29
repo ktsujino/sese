@@ -14,28 +14,28 @@ Lexicon::Lexicon(std::istream &ist) {
 }
 
 void Lexicon::save(std::ostream &ost) {
-  for (std::pair<UnicodeString, int> entry : token2id_) {
+  for (std::pair<UnicodeString, WordID> entry : token2id_) {
     ost << entry.first << "\t" << entry.second << std::endl;
   }
 }
 
-std::vector<int> Lexicon::tokens2ids(const std::vector<UnicodeString> &tokens) {
-  std::vector<int> ids;
+std::vector<WordID> Lexicon::tokens2ids(const std::vector<UnicodeString> &tokens) {
+  std::vector<WordID> ids;
   for (const auto &token : tokens) {
     ids.push_back(token2id(token));
   }
   return ids;
 }
 
-std::vector<UnicodeString> Lexicon::ids2tokens(const std::vector<int> &ids) {
+std::vector<UnicodeString> Lexicon::ids2tokens(const std::vector<WordID> &ids) {
   std::vector<UnicodeString> tokens;
-  for (const int id : ids) {
+  for (const WordID id : ids) {
     tokens.push_back(id2token(id));
   }
   return tokens;
 }
 
-int Lexicon::token2id(const UnicodeString &token) {
+WordID Lexicon::token2id(const UnicodeString &token) {
   if (token2id_.count(token) > 0) {
     return token2id_[token];
   } else {
@@ -43,7 +43,7 @@ int Lexicon::token2id(const UnicodeString &token) {
   }
 }
 
-UnicodeString Lexicon::id2token(const int id) {
+UnicodeString Lexicon::id2token(const WordID id) {
   if (id2token_.count(id) > 0) {
     return id2token_[id];
   } else {
@@ -51,8 +51,8 @@ UnicodeString Lexicon::id2token(const int id) {
   }
 }
 
-const int Lexicon::outOfVocabularyId() {
-  static const int oovId = -1;
+const WordID Lexicon::outOfVocabularyId() {
+  static const WordID oovId{-1};
   return oovId;
 }
 
@@ -64,24 +64,24 @@ const UnicodeString Lexicon::outOfVocabularyToken() {
 Lexicon::Lexicon() {
 }
 
-void Lexicon::setEntry(const UnicodeString &token, const int id) {
+void Lexicon::setEntry(const UnicodeString &token, const WordID id) {
   token2id_[token] = id;
   id2token_[id] = token;
 }
 
 void Lexicon::load(std::istream &ist) {
   UnicodeString token;
-  int id;
+  WordID id;
   while (ist >> token >> id) {
     setEntry(token, id);
   }
 }
 
-std::vector<int> LexiconBuilder::readTokens(const std::vector<UnicodeString> &tokens) {
-  std::vector<int> ids;
+std::vector<WordID> LexiconBuilder::readTokens(const std::vector<UnicodeString> &tokens) {
+  std::vector<WordID> ids;
   for (const UnicodeString &token: tokens) {
     if (lexicon_.token2id_.count(token) ==  0) {
-      int new_id = lexicon_.token2id_.size();
+      WordID new_id = lexicon_.token2id_.size();
       lexicon_.token2id_[token] = new_id;
       lexicon_.id2token_[new_id] = token;
     }

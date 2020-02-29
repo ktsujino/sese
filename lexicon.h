@@ -10,17 +10,19 @@
 
 namespace sese {
 
+using WordID = int; // for future adjustment of bit width
+
 // Converts word list into word ID list
 class Lexicon {
 public:
   Lexicon(std::istream &ist);
   void save(std::ostream &ost);
-  std::vector<int> tokens2ids(const std::vector<UnicodeString> &tokens);
-  std::vector<UnicodeString> ids2tokens(const std::vector<int> &ids);
-  int token2id(const UnicodeString &token);
-  UnicodeString id2token(const int id);
+  std::vector<WordID> tokens2ids(const std::vector<UnicodeString> &tokens);
+  std::vector<UnicodeString> ids2tokens(const std::vector<WordID> &ids);
+  WordID token2id(const UnicodeString &token);
+  UnicodeString id2token(const WordID id);
 
-  static const int outOfVocabularyId();
+  static const WordID outOfVocabularyId();
   static const UnicodeString outOfVocabularyToken();
 
   friend class LexiconBuilder;
@@ -30,15 +32,15 @@ public:
 private:
   Lexicon(); // only to be used from friends
   void load(std::istream &ist);
-  void setEntry(const UnicodeString &token, const int id);
-  std::map<UnicodeString, int> token2id_;
-  std::map<int, UnicodeString> id2token_;
+  void setEntry(const UnicodeString &token, const WordID id);
+  std::map<UnicodeString, WordID> token2id_;
+  std::map<WordID, UnicodeString> id2token_;
 };
 
 // Constructs Lexicon from corpus
 class LexiconBuilder {
 public:
-  std::vector<int> readTokens(const std::vector<UnicodeString> &tokens);
+  std::vector<WordID> readTokens(const std::vector<UnicodeString> &tokens);
   Lexicon getLexicon();
 
 private:
