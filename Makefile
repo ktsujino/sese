@@ -2,7 +2,7 @@ GTEST_PREFIX=/usr/local
 ICU_PREFIX=/usr/local/opt/icu4c
 ICU_INC=$(ICU_PREFIX)/lib/icu/Makefile.inc
 TARGET=toy tester
-OBJECTS=tokenizer.o lexicon.o
+OBJECTS=tokenizer.o lexicon.o index.o
 TEST_OBJECTS=tester.o
 
 include $(ICU_INC)

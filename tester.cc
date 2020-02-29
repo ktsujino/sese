@@ -1,3 +1,4 @@
+#include "index.h"
 #include "tokenizer.h"
 #include "lexicon.h"
 
@@ -108,6 +109,57 @@ TEST(LexiconBuilder, read_and_get_lexicon) {
   assertVectorEqual(expected_ids_lexicon, actual_ids_lexicon);
   std::vector<UnicodeString> actual_backtranslated_tokens = lexicon.ids2tokens(actual_ids_lexicon);
   assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
+}
+
+TEST(Index, query) {
+  IndexBuilder index_builder;
+  index_builder.addDocument(DocumentID{0}, std::vector<WordID>{WordID{0}, WordID{1}});
+  index_builder.addDocument(DocumentID{1}, std::vector<WordID>{WordID{0}, WordID{2}});
+  Index index = index_builder.getIndex();
+
+  std::vector<WordID> query_0{WordID{0}};
+  std::vector<DocumentID> expected_result_0{DocumentID{0}, DocumentID{1}};
+  std::vector<DocumentID> actual_result_0 = index.query(query_0);
+  assertVectorEqual(expected_result_0, actual_result_0);
+
+  std::vector<WordID> query_1{WordID{1}};
+  std::vector<DocumentID> expected_result_1{DocumentID{0}};
+  std::vector<DocumentID> actual_result_1 = index.query(query_1);
+  assertVectorEqual(expected_result_1, actual_result_1);
+
+  std::vector<WordID> query_3{WordID{3}};
+  std::vector<DocumentID> expected_result_3{};
+  std::vector<DocumentID> actual_result_3 = index.query(query_3);
+  assertVectorEqual(expected_result_3, actual_result_3);
+}
+
+TEST(Index, save_and_load) {
+  IndexBuilder index_builder;
+  index_builder.addDocument(DocumentID{0}, std::vector<WordID>{WordID{0}, WordID{1}});
+  index_builder.addDocument(DocumentID{1}, std::vector<WordID>{WordID{0}, WordID{2}});
+  Index generated_index = index_builder.getIndex();
+
+  std::string index_file_name = "/tmp/test_index_save_and_load.lexicon";
+  std::ofstream ofs(index_file_name);
+  generated_index.save(ofs);
+  ofs.close();
+
+  std::ifstream ifs(index_file_name);
+  Index loaded_index(ifs);
+  std::vector<WordID> query_0{WordID{0}};
+  std::vector<DocumentID> expected_result_0{DocumentID{0}, DocumentID{1}};
+  std::vector<DocumentID> actual_result_0 = loaded_index.query(query_0);
+  assertVectorEqual(expected_result_0, actual_result_0);
+
+  std::vector<WordID> query_1{WordID{1}};
+  std::vector<DocumentID> expected_result_1{DocumentID{0}};
+  std::vector<DocumentID> actual_result_1 = loaded_index.query(query_1);
+  assertVectorEqual(expected_result_1, actual_result_1);
+
+  std::vector<WordID> query_3{WordID{3}};
+  std::vector<DocumentID> expected_result_3{};
+  std::vector<DocumentID> actual_result_3 = loaded_index.query(query_3);
+  assertVectorEqual(expected_result_3, actual_result_3);
 }
 
 } // namespace sese

@@ -25,16 +25,16 @@ public:
   static const WordID outOfVocabularyId();
   static const UnicodeString outOfVocabularyToken();
 
-  friend class LexiconBuilder;
-  FRIEND_TEST(Lexicon, conversion);
-  FRIEND_TEST(Lexicon, save_and_load);
-
 private:
   Lexicon(); // only to be used from friends
   void load(std::istream &ist);
   void setEntry(const UnicodeString &token, const WordID id);
   std::map<UnicodeString, WordID> token2id_;
   std::map<WordID, UnicodeString> id2token_;
+
+  friend class LexiconBuilder;
+  FRIEND_TEST(Lexicon, conversion);
+  FRIEND_TEST(Lexicon, save_and_load);
 };
 
 // Constructs Lexicon from corpus

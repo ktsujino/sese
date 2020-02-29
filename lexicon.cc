@@ -14,7 +14,7 @@ Lexicon::Lexicon(std::istream &ist) {
 }
 
 void Lexicon::save(std::ostream &ost) {
-  for (std::pair<UnicodeString, WordID> entry : token2id_) {
+  for (const std::pair<UnicodeString, WordID> &entry : token2id_) {
     ost << entry.first << "\t" << entry.second << std::endl;
   }
 }
