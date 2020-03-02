@@ -1,5 +1,5 @@
-#ifndef _SESS_MERGE_H
-#define _SESS_MERGE_H
+#ifndef _SESS_MERGE_H_
+#define _SESS_MERGE_H_
 
 #include <vector>
 
@@ -28,4 +28,4 @@ std::vector<T> mergeSortedVectors(const std::vector<T>& first,
 
 } // namespace sese
 
-#endif // #ifndef _SESS_MERGE_H
+#endif // #ifndef _SESS_MERGE_H_

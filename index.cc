@@ -70,7 +70,7 @@ std::vector<DocumentID> Index::wordID2DocumentList(const WordID &word_id) {
 }
 
 IndexBuilder::IndexBuilder()
-  : max_document_id_(kNonExistentDocID),
+  : max_document_id_(kNonExistentDocumentID),
     index_() {
 }
 

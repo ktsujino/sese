@@ -1,9 +1,11 @@
+#include "document.h"
 #include "index.h"
 #include "tokenizer.h"
 #include "lexicon.h"
 
 #include <cstdio>
 #include <fstream>
+#include <sstream>
 #include <vector>
 
 #include <unicode/rbbi.h>
@@ -160,6 +162,36 @@ TEST(Index, save_and_load) {
   std::vector<DocumentID> expected_result_3{};
   std::vector<DocumentID> actual_result_3 = loaded_index.query(query_3);
   assertVectorEqual(expected_result_3, actual_result_3);
+}
+
+TEST(DocumentStore, read_stream) {
+  std::string input_string =
+    "<doc id=\"1\" url=\"url0\" title=\"title0\">\n"
+    "body0\n"
+    "</doc>\n"
+    "<doc id=\"2\" url=\"url1\" title=\"title1\">\n"
+    "body1-1\n"
+    "body1-2\n"
+    "</doc>\n";
+
+  std::stringstream ss(input_string);
+  DocumentStore document_store;
+  std::vector<Document> documents = document_store.readXML(ss);
+
+  EXPECT_EQ(2, documents.size());
+  EXPECT_EQ(DocumentID(0), documents[0].document_id);
+  EXPECT_EQ("url0", documents[0].url);
+  EXPECT_EQ("title0", documents[0].title);
+  assertVectorEqual(std::vector<std::string>{"body0"}, documents[0].body);
+  EXPECT_EQ(DocumentID(1), documents[1].document_id);
+  EXPECT_EQ("url1", documents[1].url);
+  EXPECT_EQ("title1", documents[1].title);
+  assertVectorEqual(std::vector<std::string>{"body1-1", "body1-2"}, documents[1].body);
+
+  Document document0 = document_store.id2Document(DocumentID(0));
+  EXPECT_EQ("url0", document0.url);
+  EXPECT_EQ("title0", document0.title);
+  assertVectorEqual(std::vector<std::string>{"body0"}, document0.body);
 }
 
 } // namespace sese

@@ -9,11 +9,9 @@
 #include <unicode/unistr.h>
 
 #include "lexicon.h" // for WordID
+#include "document.h" // for DocumentID
 
 namespace sese {
-
-using DocumentID = int; // for future adjustment of bit width
-constexpr DocumentID kNonExistentDocID = -1; // guaranteed to be smaller than any existing document ID
 
 class Index {
 public:
