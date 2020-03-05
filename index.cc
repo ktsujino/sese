@@ -74,10 +74,10 @@ std::vector<DocumentID> Index::wordID2DocumentList(const WordID &word_id) const 
   }
 }
 
-IndexBuilder::IndexBuilder(DocumentStore document_store, icu::Locale locale, bool enable_normalize) :
+IndexBuilder::IndexBuilder(const std::vector<Document> &documents, icu::Locale locale, bool enable_normalize) :
   tokenizer_(locale) {
-  for (DocumentID document_id = 0; document_id < document_store.size(); document_id++) {
-    addDocument(document_store.getDocument(document_id), enable_normalize);
+  for (DocumentID document_id = 0; document_id < documents.size(); document_id++) {
+    addDocument(documents[document_id], enable_normalize);
   }
 }
 
@@ -95,17 +95,23 @@ void IndexBuilder::addDocument(const Document &document, bool enable_normalize) 
   for (const auto &word_id : word_ids) {
     index_.posting_lists_[word_id].push_back(document.document_id);
   }
+  std::cout << "Indexed "
+	    << document.title
+	    << " with "
+	    << tokens.size()
+	    << " tokens"
+	    << std::endl;
 }
 
 std::vector<UnicodeString> IndexBuilder::tokenizeDocument(const Document &document, bool enable_normalize) {
-  std::vector<UnicodeString> tokens;
+  std::set<UnicodeString> tokens;
   std::vector<UnicodeString> tokenized_title = tokenizer_.tokenize(document.title, enable_normalize);
-  tokens.insert(tokens.end(), tokenized_title.begin(), tokenized_title.end());
+  tokens.insert(tokenized_title.begin(), tokenized_title.end());
   for (const std::string &line : document.body) {
     std::vector<UnicodeString> tokenized_line = tokenizer_.tokenize(line, enable_normalize);
-    tokens.insert(tokens.end(), tokenized_line.begin(), tokenized_line.end());
+    tokens.insert(tokenized_line.begin(), tokenized_line.end());
   }
-  return tokens;
+  return std::vector<UnicodeString>(tokens.begin(), tokens.end());
 }
 
 } // namespace sese

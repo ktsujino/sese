@@ -125,14 +125,12 @@ void queryTest(const Index &index,
 }
 
 TEST(Index, query) {
-  Document document0("url0", "foo", DocumentID(0), std::vector<std::string>{"bar"});
+  Document document0("url0", "foo", DocumentID(0), std::vector<std::string>{"foo foo bar"});
   Document document1("url1", "foo", DocumentID(1),std::vector<std::string>{"baz", "bun"});
 
-  DocumentStore document_store;
-  document_store.addDocument(document0);
-  document_store.addDocument(document1);
+  std::vector<Document> documents{document0, document1};
 
-  IndexBuilder index_builder(document_store, icu::Locale::getRoot());
+  IndexBuilder index_builder(documents, icu::Locale::getRoot());
   Index index = index_builder.getIndex();
   Tokenizer tokenizer;
   Lexicon lexicon = index_builder.getLexicon();
@@ -163,13 +161,11 @@ TEST(Index, query) {
 }
 
 TEST(Index, save_and_load) {
-  Document document0("url0", "foo", DocumentID(0), std::vector<std::string>{"bar"});
+  Document document0("url0", "foo", DocumentID(0), std::vector<std::string>{"foo foo bar"});
   Document document1("url1", "foo", DocumentID(1),std::vector<std::string>{"baz", "bun"});
 
-  DocumentStore document_store;
-  document_store.addDocument(document0);
-  document_store.addDocument(document1);
-  IndexBuilder index_builder(document_store, icu::Locale::getRoot());
+  std::vector<Document> documents{document0, document1};
+  IndexBuilder index_builder(documents, icu::Locale::getRoot());
   Index generated_index = index_builder.getIndex();
   Tokenizer tokenizer;
   Lexicon lexicon = index_builder.getLexicon();
