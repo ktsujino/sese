@@ -164,7 +164,7 @@ TEST(Index, save_and_load) {
   assertVectorEqual(expected_result_3, actual_result_3);
 }
 
-TEST(DocumentStore, read_stream) {
+TEST(DocumentReader, read_stream) {
   std::string input_string =
     "<doc id=\"1\" url=\"url0\" title=\"title0\">\n"
     "body0\n"
@@ -175,8 +175,8 @@ TEST(DocumentStore, read_stream) {
     "</doc>\n";
 
   std::stringstream ss(input_string);
-  DocumentStore document_store;
-  std::vector<Document> documents = document_store.readXML(ss);
+  DocumentReader document_reader;
+  std::vector<Document> documents = document_reader.readXML(ss);
 
   EXPECT_EQ(2, documents.size());
   EXPECT_EQ(DocumentID(0), documents[0].document_id);
@@ -188,10 +188,11 @@ TEST(DocumentStore, read_stream) {
   EXPECT_EQ("title1", documents[1].title);
   assertVectorEqual(std::vector<std::string>{"body1-1", "body1-2"}, documents[1].body);
 
+  DocumentStore document_store = document_reader.getDocumentStore();
   Document document0 = document_store.id2Document(DocumentID(0));
   EXPECT_EQ("url0", document0.url);
   EXPECT_EQ("title0", document0.title);
-  assertVectorEqual(std::vector<std::string>{"body0"}, document0.body);
+  assertVectorEqual(std::vector<std::string>{}, document0.body);
 }
 
 } // namespace sese
