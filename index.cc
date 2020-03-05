@@ -9,7 +9,7 @@
 
 #include "document.h"
 #include "lexicon.h"
-#include "merge.h"
+#include "util.h"
 #include "tokenizer.h"
 
 namespace sese {
