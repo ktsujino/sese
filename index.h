@@ -21,7 +21,7 @@ public:
   std::vector<DocumentID> query(const std::vector<WordID> &keywords) const;
 
 private:
-  Index();
+  Index() {};
   void load(std::istream &ist);
   std::vector<DocumentID> wordID2DocumentList(const WordID &word_id) const;
   std::map<WordID, std::vector<DocumentID>> posting_lists_;

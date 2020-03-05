@@ -45,9 +45,6 @@ std::vector<DocumentID> Index::query(const std::vector<WordID> &keywords) const 
   return matched_doc_list;
 }
 
-Index::Index() {
-}
-
 void Index::load(std::istream &ist) {
   int posting_lists_size;
   ist >> posting_lists_size;
