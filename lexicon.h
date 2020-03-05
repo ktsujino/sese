@@ -16,11 +16,11 @@ using WordID = int; // for future adjustment of bit width
 class Lexicon {
 public:
   Lexicon(std::istream &ist);
-  void save(std::ostream &ost);
-  std::vector<WordID> tokens2ids(const std::vector<UnicodeString> &tokens);
-  std::vector<UnicodeString> ids2tokens(const std::vector<WordID> &ids);
-  WordID token2id(const UnicodeString &token);
-  UnicodeString id2token(const WordID id);
+  void save(std::ostream &ost) const;
+  std::vector<WordID> tokens2ids(const std::vector<UnicodeString> &tokens) const;
+  std::vector<UnicodeString> ids2tokens(const std::vector<WordID> &ids) const;
+  WordID token2id(const UnicodeString &token) const;
+  UnicodeString id2token(const WordID id) const;
 
   static const WordID outOfVocabularyId();
   static const UnicodeString outOfVocabularyToken();

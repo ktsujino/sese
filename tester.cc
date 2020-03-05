@@ -33,7 +33,7 @@ void assertVectorEqual(const std::vector<T> &expected,
 
 TEST(Tokenizer, not_normalized) {
   Tokenizer tokenizer;
-  std::vector<UnicodeString> tokenized = tokenizer.tokenize("I love NY!");
+  std::vector<UnicodeString> tokenized = tokenizer.tokenize("I love NY!", false);
   std::vector<UnicodeString> expected = usVector({"I", " ", "love", " ", "NY", "!"});
   assertVectorEqual(expected, tokenized);
 }
@@ -113,33 +113,66 @@ TEST(LexiconBuilder, read_and_get_lexicon) {
   assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
 }
 
+void queryTest(const Index &index,
+	       const Tokenizer &tokenizer,
+	       const Lexicon &lexicon,
+	       const std::string &query,
+	       std::vector<DocumentID> expected_result) {
+  std::vector<UnicodeString> query_tokenized = tokenizer.tokenize(query);
+  std::vector<WordID> query_wordids = lexicon.tokens2ids(query_tokenized);
+  std::vector<DocumentID> actual_result = index.query(query_wordids);
+  assertVectorEqual(expected_result, actual_result);
+}
+
 TEST(Index, query) {
-  IndexBuilder index_builder;
-  index_builder.addDocument(DocumentID{0}, std::vector<WordID>{WordID{0}, WordID{1}});
-  index_builder.addDocument(DocumentID{1}, std::vector<WordID>{WordID{0}, WordID{2}});
+  Document document0("url0", "foo", DocumentID(0), std::vector<std::string>{"bar"});
+  Document document1("url1", "foo", DocumentID(1),std::vector<std::string>{"baz", "bun"});
+
+  DocumentStore document_store;
+  document_store.addDocument(document0);
+  document_store.addDocument(document1);
+
+  IndexBuilder index_builder(document_store, icu::Locale::getRoot());
   Index index = index_builder.getIndex();
+  Tokenizer tokenizer;
+  Lexicon lexicon = index_builder.getLexicon();
 
-  std::vector<WordID> query_0{WordID{0}};
-  std::vector<DocumentID> expected_result_0{DocumentID{0}, DocumentID{1}};
-  std::vector<DocumentID> actual_result_0 = index.query(query_0);
-  assertVectorEqual(expected_result_0, actual_result_0);
+  std::string query0 = "foo";
+  std::vector<DocumentID> expected_result0{DocumentID{0}, DocumentID{1}};
+  queryTest(index, tokenizer, lexicon, query0, expected_result0);
 
-  std::vector<WordID> query_1{WordID{1}};
-  std::vector<DocumentID> expected_result_1{DocumentID{0}};
-  std::vector<DocumentID> actual_result_1 = index.query(query_1);
-  assertVectorEqual(expected_result_1, actual_result_1);
+  std::string query1 = "foo bar";
+  std::vector<DocumentID> expected_result1{DocumentID{0}};
+  queryTest(index, tokenizer, lexicon, query1, expected_result1);
 
-  std::vector<WordID> query_3{WordID{3}};
-  std::vector<DocumentID> expected_result_3{};
-  std::vector<DocumentID> actual_result_3 = index.query(query_3);
-  assertVectorEqual(expected_result_3, actual_result_3);
+  std::string query2 = "baz";
+  std::vector<DocumentID> expected_result2{DocumentID{1}};
+  queryTest(index, tokenizer, lexicon, query2, expected_result2);
+
+  std::string query3 = "foo baz bun";
+  std::vector<DocumentID> expected_result3{DocumentID{1}};
+  queryTest(index, tokenizer, lexicon, query3, expected_result3);
+
+  std::string query4 = "foo bar baz";
+  std::vector<DocumentID> expected_result4{};
+  queryTest(index, tokenizer, lexicon, query4, expected_result4);
+
+  std::string query5 = "xxx";
+  std::vector<DocumentID> expected_result5{};
+  queryTest(index, tokenizer, lexicon, query5, expected_result5);
 }
 
 TEST(Index, save_and_load) {
-  IndexBuilder index_builder;
-  index_builder.addDocument(DocumentID{0}, std::vector<WordID>{WordID{0}, WordID{1}});
-  index_builder.addDocument(DocumentID{1}, std::vector<WordID>{WordID{0}, WordID{2}});
+  Document document0("url0", "foo", DocumentID(0), std::vector<std::string>{"bar"});
+  Document document1("url1", "foo", DocumentID(1),std::vector<std::string>{"baz", "bun"});
+
+  DocumentStore document_store;
+  document_store.addDocument(document0);
+  document_store.addDocument(document1);
+  IndexBuilder index_builder(document_store, icu::Locale::getRoot());
   Index generated_index = index_builder.getIndex();
+  Tokenizer tokenizer;
+  Lexicon lexicon = index_builder.getLexicon();
 
   std::string index_file_name = "/tmp/test_index_save_and_load.lexicon";
   std::ofstream ofs(index_file_name);
@@ -148,20 +181,29 @@ TEST(Index, save_and_load) {
 
   std::ifstream ifs(index_file_name);
   Index loaded_index(ifs);
-  std::vector<WordID> query_0{WordID{0}};
-  std::vector<DocumentID> expected_result_0{DocumentID{0}, DocumentID{1}};
-  std::vector<DocumentID> actual_result_0 = loaded_index.query(query_0);
-  assertVectorEqual(expected_result_0, actual_result_0);
+  std::string query0 = "foo";
+  std::vector<DocumentID> expected_result0{DocumentID{0}, DocumentID{1}};
+  queryTest(loaded_index, tokenizer, lexicon, query0, expected_result0);
 
-  std::vector<WordID> query_1{WordID{1}};
-  std::vector<DocumentID> expected_result_1{DocumentID{0}};
-  std::vector<DocumentID> actual_result_1 = loaded_index.query(query_1);
-  assertVectorEqual(expected_result_1, actual_result_1);
+  std::string query1 = "foo bar";
+  std::vector<DocumentID> expected_result1{DocumentID{0}};
+  queryTest(loaded_index, tokenizer, lexicon, query1, expected_result1);
 
-  std::vector<WordID> query_3{WordID{3}};
-  std::vector<DocumentID> expected_result_3{};
-  std::vector<DocumentID> actual_result_3 = loaded_index.query(query_3);
-  assertVectorEqual(expected_result_3, actual_result_3);
+  std::string query2 = "baz";
+  std::vector<DocumentID> expected_result2{DocumentID{1}};
+  queryTest(loaded_index, tokenizer, lexicon, query2, expected_result2);
+
+  std::string query3 = "foo baz bun";
+  std::vector<DocumentID> expected_result3{DocumentID{1}};
+  queryTest(loaded_index, tokenizer, lexicon, query3, expected_result3);
+
+  std::string query4 = "foo bar baz";
+  std::vector<DocumentID> expected_result4{};
+  queryTest(loaded_index, tokenizer, lexicon, query4, expected_result4);
+
+  std::string query5 = "xxx";
+  std::vector<DocumentID> expected_result5{};
+  queryTest(loaded_index, tokenizer, lexicon, query5, expected_result5);
 }
 
 TEST(DocumentReader, read_stream) {
@@ -189,7 +231,7 @@ TEST(DocumentReader, read_stream) {
   assertVectorEqual(std::vector<std::string>{"body1-1", "body1-2"}, documents[1].body);
 
   DocumentStore document_store = document_reader.getDocumentStore();
-  Document document0 = document_store.id2Document(DocumentID(0));
+  Document document0 = document_store.getDocument(DocumentID(0));
   EXPECT_EQ("url0", document0.url);
   EXPECT_EQ("title0", document0.title);
   assertVectorEqual(std::vector<std::string>{}, document0.body);

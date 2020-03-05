@@ -4,9 +4,13 @@
 #include <iostream>
 #include <vector>
 
+#include <gtest/gtest.h>
 #include <unicode/unistr.h>
 
+#include "document.h"
+#include "lexicon.h"
 #include "merge.h"
+#include "tokenizer.h"
 
 namespace sese {
 
@@ -14,7 +18,7 @@ Index::Index(std::istream &ist) {
   load(ist);
 }
 
-void Index::save(std::ostream &ost) {
+void Index::save(std::ostream &ost) const {
   ost << posting_lists_.size() << std::endl;
   for (const std::pair<WordID, std::vector<DocumentID>> &entry : posting_lists_) {
     ost << entry.first << "\t" << entry.second.size() << "\t";
@@ -28,7 +32,7 @@ void Index::save(std::ostream &ost) {
   }
 }
 
-std::vector<DocumentID> Index::query(const std::vector<WordID> &keywords) {
+std::vector<DocumentID> Index::query(const std::vector<WordID> &keywords) const {
   std::vector<DocumentID> matched_doc_list;
   for (int i = 0; i < keywords.size(); i++) {
     std::vector<DocumentID> list = wordID2DocumentList(keywords[i]);
@@ -61,29 +65,47 @@ void Index::load(std::istream &ist) {
   }
 }
 
-std::vector<DocumentID> Index::wordID2DocumentList(const WordID &word_id) {
-  if (posting_lists_.count(word_id) > 0) {
-    return posting_lists_[word_id];
+std::vector<DocumentID> Index::wordID2DocumentList(const WordID &word_id) const {
+  const auto &it = posting_lists_.find(word_id);
+  if (it != posting_lists_.end()) {
+    return it->second;
   } else {
     return std::vector<DocumentID>();
   }
 }
 
-IndexBuilder::IndexBuilder()
-  : max_document_id_(kNonExistentDocumentID),
-    index_() {
-}
-
-void IndexBuilder::addDocument(const DocumentID &document_id, const std::vector<WordID> &word_ids) {
-  assert(document_id > max_document_id_);
-  max_document_id_ = document_id;
-  for (const auto &word_id : word_ids) {
-    index_.posting_lists_[word_id].push_back(document_id);
+IndexBuilder::IndexBuilder(DocumentStore document_store, icu::Locale locale, bool enable_normalize) :
+  tokenizer_(locale) {
+  for (DocumentID document_id = 0; document_id < document_store.size(); document_id++) {
+    addDocument(document_store.getDocument(document_id), enable_normalize);
   }
 }
 
 Index IndexBuilder::getIndex() {
   return index_;
+}
+
+Lexicon IndexBuilder::getLexicon() {
+  return lexicon_builder_.getLexicon();
+}
+
+void IndexBuilder::addDocument(const Document &document, bool enable_normalize) {
+  std::vector<UnicodeString> tokens = tokenizeDocument(document, enable_normalize);
+  std::vector<WordID> word_ids = lexicon_builder_.readTokens(tokens);
+  for (const auto &word_id : word_ids) {
+    index_.posting_lists_[word_id].push_back(document.document_id);
+  }
+}
+
+std::vector<UnicodeString> IndexBuilder::tokenizeDocument(const Document &document, bool enable_normalize) {
+  std::vector<UnicodeString> tokens;
+  std::vector<UnicodeString> tokenized_title = tokenizer_.tokenize(document.title, enable_normalize);
+  tokens.insert(tokens.end(), tokenized_title.begin(), tokenized_title.end());
+  for (const std::string &line : document.body) {
+    std::vector<UnicodeString> tokenized_line = tokenizer_.tokenize(line, enable_normalize);
+    tokens.insert(tokens.end(), tokenized_line.begin(), tokenized_line.end());
+  }
+  return tokens;
 }
 
 } // namespace sese

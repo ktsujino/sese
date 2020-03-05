@@ -29,12 +29,16 @@ void DocumentStore::save(std::ostream &ost) {
   }
 }
 
-Document DocumentStore::id2Document(const DocumentID &document_id) {
+Document DocumentStore::getDocument(const DocumentID &document_id) {
   if (id2document_.count(document_id) > 0) {
     return id2document_[document_id];
   }else {
     return Document("", "", kNonExistentDocumentID, std::vector<std::string>());
   }
+}
+
+int DocumentStore::size() {
+  return id2document_.size();
 }
 
 void DocumentStore::load(std::istream &ist) {
@@ -60,6 +64,10 @@ void DocumentStore::load(std::istream &ist) {
   }
 }
 
+void DocumentStore::addDocument(Document document) {
+  id2document_[document.document_id] = document;
+}
+
 std::vector<Document> DocumentReader::readXML(std::istream &ist) {
   document_store_.id2document_.clear();
   std::vector<Document> documents;
@@ -83,7 +91,7 @@ std::vector<Document> DocumentReader::readXML(std::istream &ist) {
 			body);
       documents.push_back(document);
       document.body.clear();
-      document_store_.id2document_[document_id] = document;
+      document_store_.addDocument(document);
     } else {
       // in body
       body.push_back(line);

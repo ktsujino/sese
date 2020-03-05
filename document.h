@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 
+#include <gtest/gtest.h>
 #include <unicode/unistr.h>
 
 namespace sese {
@@ -29,14 +30,18 @@ class DocumentStore {
 public:
   DocumentStore(std::istream &ist);
   void save(std::ostream &ost);  
-  Document id2Document(const DocumentID &document_id);
+  Document getDocument(const DocumentID &document_id);
+  int size();
 
 private:
-  void load(std::istream &ist);
   DocumentStore() {};
+  void load(std::istream &ist);
+  void addDocument(Document document);
   std::map<DocumentID, Document> id2document_;
 
   friend class DocumentReader;
+  FRIEND_TEST(Index, query);
+  FRIEND_TEST(Index, save_and_load);
 };
 
 class DocumentReader {

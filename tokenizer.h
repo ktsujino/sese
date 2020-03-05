@@ -13,8 +13,8 @@ class Tokenizer {
 public:
   Tokenizer(icu::Locale locale=icu::Locale::getRoot());
   ~Tokenizer();
-  std::vector<UnicodeString> tokenize(std::string utf8str, bool enable_normalize=false);
-  std::vector<UnicodeString> normalize(std::vector<UnicodeString> tokens);
+  std::vector<UnicodeString> tokenize(std::string utf8str, bool enable_normalize=true) const;
+  std::vector<UnicodeString> normalize(std::vector<UnicodeString> tokens) const;
 
 private:
   icu::BreakIterator* bi_;

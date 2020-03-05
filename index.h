@@ -8,21 +8,22 @@
 #include <gtest/gtest.h>
 #include <unicode/unistr.h>
 
-#include "lexicon.h" // for WordID
-#include "document.h" // for DocumentID
+#include "document.h"
+#include "lexicon.h"
+#include "tokenizer.h"
 
 namespace sese {
 
 class Index {
 public:
   Index(std::istream &ist);
-  void save(std::ostream &ost);
-  std::vector<DocumentID> query(const std::vector<WordID> &keywords);
+  void save(std::ostream &ost) const;
+  std::vector<DocumentID> query(const std::vector<WordID> &keywords) const;
 
 private:
   Index();
   void load(std::istream &ist);
-  std::vector<DocumentID> wordID2DocumentList(const WordID &word_id);
+  std::vector<DocumentID> wordID2DocumentList(const WordID &word_id) const;
   std::map<WordID, std::vector<DocumentID>> posting_lists_;
 
   friend class IndexBuilder;
@@ -30,13 +31,18 @@ private:
 
 class IndexBuilder {
 public:
-  IndexBuilder();
-  void addDocument(const DocumentID &document_id, const std::vector<WordID> &word_ids);  // true iff success
+  IndexBuilder(DocumentStore document_store, icu::Locale locale, bool enable_normalize=true);
   Index getIndex();
+  Lexicon getLexicon();
 
 private:
-  DocumentID max_document_id_;
+  void addDocument(const Document &document, bool enable_normalize);
+  std::vector<UnicodeString> tokenizeDocument(const Document &document, bool enable_normalize);
   Index index_;
+  LexiconBuilder lexicon_builder_;
+  Tokenizer tokenizer_;
+
+  FRIEND_TEST(Index, query);
 };
 
 } // namespace sese

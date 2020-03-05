@@ -16,7 +16,7 @@ Tokenizer::~Tokenizer() {
   delete bi_;
 }
 
-std::vector<UnicodeString> Tokenizer::tokenize(std::string utf8str, bool enable_normalize) {
+std::vector<UnicodeString> Tokenizer::tokenize(std::string utf8str, bool enable_normalize) const {
   UnicodeString u_str = UnicodeString::fromUTF8(utf8str);
   std::vector<UnicodeString> words;
   
@@ -35,7 +35,7 @@ std::vector<UnicodeString> Tokenizer::tokenize(std::string utf8str, bool enable_
   return words;  
 }
 
-std::vector<UnicodeString> Tokenizer::normalize(std::vector<UnicodeString> tokens) {
+std::vector<UnicodeString> Tokenizer::normalize(std::vector<UnicodeString> tokens) const {
   std::vector<UnicodeString> normalized;
   for (UnicodeString token : tokens) {
     token = token.trim().toLower();
