@@ -20,7 +20,9 @@ public:
   std::vector<WordID> tokens2ids(const std::vector<UnicodeString> &tokens) const;
   std::vector<UnicodeString> ids2tokens(const std::vector<WordID> &ids) const;
   WordID token2id(const UnicodeString &token) const;
-  UnicodeString id2token(const WordID id) const;
+  UnicodeString id2token(const WordID &id) const;
+  int id2DocumentFrequency(const WordID &id) const;
+  int token2DocumentFrequency(const UnicodeString &token) const;
 
   static const WordID outOfVocabularyId();
   static const UnicodeString outOfVocabularyToken();
@@ -28,9 +30,10 @@ public:
 private:
   Lexicon(); // only to be used from friends
   void load(std::istream &ist);
-  void setEntry(const UnicodeString &token, const WordID id);
+  void setEntry(const UnicodeString &token, const WordID id, const int frequency);
   std::map<UnicodeString, WordID> token2id_;
   std::map<WordID, UnicodeString> id2token_;
+  std::map<WordID, int> document_frequency_;
 
   friend class LexiconBuilder;
   FRIEND_TEST(Lexicon, conversion);

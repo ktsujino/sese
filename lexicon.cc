@@ -15,7 +15,10 @@ Lexicon::Lexicon(std::istream &ist) {
 
 void Lexicon::save(std::ostream &ost) const {
   for (const std::pair<UnicodeString, WordID> &entry : token2id_) {
-    ost << entry.first << "\t" << entry.second << std::endl;
+    UnicodeString token = entry.first;
+    WordID id = entry.second;
+    int frequency = id2DocumentFrequency(id);
+    ost << entry.first << "\t" << entry.second << "\t" << frequency << std::endl;
   }
 }
 
@@ -44,12 +47,35 @@ WordID Lexicon::token2id(const UnicodeString &token) const {
   }
 }
 
-UnicodeString Lexicon::id2token(const WordID id) const {
+UnicodeString Lexicon::id2token(const WordID &id) const {
   const auto &it = id2token_.find(id);
   if (it != id2token_.end()) {
     return it->second;
   } else {
     return Lexicon::outOfVocabularyToken();
+  }
+}
+
+int Lexicon::id2DocumentFrequency(const WordID &id) const {
+  const auto &it = document_frequency_.find(id);
+  if (it != document_frequency_.end()) {
+    return it->second;
+  } else {
+    return 0;
+  }
+}
+
+int Lexicon::token2DocumentFrequency(const UnicodeString &token) const {
+  const auto &tit = token2id_.find(token);
+  if (tit == token2id_.end()) {
+    return 0;
+  }
+  const WordID id = tit->second;
+  const auto &iit = document_frequency_.find(id);
+  if (iit != document_frequency_.end()) {
+    return iit->second;
+  } else {
+    return 0;
   }
 }
 
@@ -66,28 +92,35 @@ const UnicodeString Lexicon::outOfVocabularyToken() {
 Lexicon::Lexicon() {
 }
 
-void Lexicon::setEntry(const UnicodeString &token, const WordID id) {
+void Lexicon::setEntry(const UnicodeString &token, const WordID id, const int frequency) {
   token2id_[token] = id;
   id2token_[id] = token;
+  document_frequency_[id] = frequency;
 }
 
 void Lexicon::load(std::istream &ist) {
   UnicodeString token;
   WordID id;
-  while (ist >> token >> id) {
-    setEntry(token, id);
+  int frequency;
+  while (ist >> token >> id >> frequency) {
+    setEntry(token, id, frequency);
   }
 }
 
 std::vector<WordID> LexiconBuilder::registerTokens(const std::vector<UnicodeString> &tokens) {
   std::vector<WordID> ids;
   for (const UnicodeString &token: tokens) {
-    if (lexicon_.token2id_.count(token) ==  0) {
+    const auto &it = lexicon_.token2id_.find(token);
+    if (it == lexicon_.token2id_.end()) {
       WordID new_id = lexicon_.token2id_.size();
       lexicon_.token2id_[token] = new_id;
       lexicon_.id2token_[new_id] = token;
     }
     ids.push_back(lexicon_.token2id_[token]);
+  }
+  std::set<WordID> unique_ids(ids.begin(), ids.end());
+  for (const WordID &id: unique_ids) {
+    lexicon_.document_frequency_[id] += 1;
   }
   return ids;
 }
