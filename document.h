@@ -29,8 +29,8 @@ public:
 class DocumentStore {
 public:
   DocumentStore(std::istream &ist);
-  void save(std::ostream &ost);  
-  Document getDocument(const DocumentID &document_id);
+  void save(std::ostream &ost) const;
+  Document getDocument(const DocumentID &document_id) const;
   int size();
 
 private:

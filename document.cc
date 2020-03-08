@@ -14,7 +14,7 @@ DocumentStore::DocumentStore(std::istream &ist) {
   load(ist);
 }
 
-void DocumentStore::save(std::ostream &ost) {
+void DocumentStore::save(std::ostream &ost) const {
   ost << id2document_.size() << std::endl;
   for (const std::pair<DocumentID, Document> &entry : id2document_) {
     ost << entry.first << "\t"
@@ -29,9 +29,10 @@ void DocumentStore::save(std::ostream &ost) {
   }
 }
 
-Document DocumentStore::getDocument(const DocumentID &document_id) {
-  if (id2document_.count(document_id) > 0) {
-    return id2document_[document_id];
+Document DocumentStore::getDocument(const DocumentID &document_id) const {
+  const auto &it = id2document_.find(document_id);
+  if (it != id2document_.end()) {
+    return it->second;
   }else {
     return Document("", "", kNonExistentDocumentID, std::vector<std::string>());
   }
