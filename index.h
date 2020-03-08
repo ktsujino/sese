@@ -10,6 +10,7 @@
 
 #include "document.h"
 #include "lexicon.h"
+#include "query.h"
 #include "tokenizer.h"
 
 namespace sese {
@@ -30,7 +31,7 @@ class Index {
 public:
   Index(std::istream &ist);
   void save(std::ostream &ost) const;
-  std::vector<MatchInfo> query(const std::vector<WordID> &keywords) const;
+  std::vector<MatchInfo> query(const QueryInfo &query_info) const;
 
 private:
   Index() {};
@@ -38,7 +39,7 @@ private:
   std::vector<DocumentID> calcMatchSet(const std::vector<WordID> &keywords) const;
   std::vector<DocumentID> wordID2DocumentList(const WordID &word_id) const;
   MatchInfo getMatchInfo(const DocumentID &document_id,
-			 const std::vector<WordID> &keywords) const;
+			 const QueryInfo &query_info) const;
   std::map<WordID, std::vector<DocumentID>> posting_lists_;
   std::map<DocumentID, int> document_length_;
   std::map<std::pair<DocumentID, WordID>, int> term_frequency_;

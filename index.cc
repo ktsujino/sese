@@ -40,11 +40,11 @@ void Index::save(std::ostream &ost) const {
   }
 }
 
-std::vector<MatchInfo> Index::query(const std::vector<WordID> &keywords) const {
-  std::vector<DocumentID> matched_doc_list = calcMatchSet(keywords);
+std::vector<MatchInfo> Index::query(const QueryInfo &query_info) const {
+  std::vector<DocumentID> matched_doc_list = calcMatchSet(query_info.word_ids);
   std::vector<MatchInfo> match_info_list;
   for (const DocumentID &document_id : matched_doc_list) {
-    match_info_list.push_back(getMatchInfo(document_id, keywords));
+    match_info_list.push_back(getMatchInfo(document_id, query_info));
   }
   return match_info_list;
 }
@@ -106,9 +106,9 @@ std::vector<DocumentID> Index::wordID2DocumentList(const WordID &word_id) const 
 }
 
 MatchInfo Index::getMatchInfo(const DocumentID &document_id,
-		       const std::vector<WordID> &keywords) const {
+			      const QueryInfo &query_info) const {
   std::vector<int> term_frequency;
-  for (const auto &word_id : keywords) {
+  for (const auto &word_id : query_info.word_ids) {
     const auto &it = term_frequency_.find(std::make_pair(document_id, word_id));
     if (it != term_frequency_.end()) {
       term_frequency.push_back(it->second);

@@ -1,7 +1,8 @@
 #include "document.h"
 #include "index.h"
-#include "tokenizer.h"
 #include "lexicon.h"
+#include "query.h"
+#include "tokenizer.h"
 
 #include <cstdio>
 #include <fstream>
@@ -137,13 +138,11 @@ TEST(LexiconBuilder, read_and_get_lexicon) {
 }
 
 void queryTest(const Index &index,
-	       const Tokenizer &tokenizer,
-	       const Lexicon &lexicon,
-	       const std::string &query,
+	       const QueryProcessor &query_processor,
+	       const std::string &keywords,
 	       std::vector<MatchInfo> expected_result) {
-  std::vector<UnicodeString> query_tokenized = tokenizer.tokenize(query);
-  std::vector<WordID> query_wordids = lexicon.tokens2ids(query_tokenized);
-  std::vector<MatchInfo> actual_result = index.query(query_wordids);
+  QueryInfo query_info = query_processor.processQuery(keywords);
+  std::vector<MatchInfo> actual_result = index.query(query_info);
   EXPECT_EQ(expected_result.size(), actual_result.size());
   for (int pos = 0; pos < expected_result.size(); pos++) {
     EXPECT_EQ(expected_result[pos].document_id, actual_result[pos].document_id);
@@ -158,35 +157,35 @@ TEST(Index, query) {
 
   std::vector<Document> documents{document0, document1};
 
-  IndexBuilder index_builder(documents, icu::Locale::getRoot());
+  IndexBuilder index_builder(documents);
   Index index = index_builder.getIndex();
-  Tokenizer tokenizer;
   Lexicon lexicon = index_builder.getLexicon();
+  QueryProcessor query_processor(lexicon);
 
   std::string query0 = "foo";
   std::vector<MatchInfo> expected_result0{MatchInfo{0, 4, std::vector<int>{3}},
 					  MatchInfo{1, 3, std::vector<int>{1}}};
-  queryTest(index, tokenizer, lexicon, query0, expected_result0);
+  queryTest(index, query_processor, query0, expected_result0);
 
   std::string query1 = "foo bar";
   std::vector<MatchInfo> expected_result1{MatchInfo{0, 4, std::vector<int>{3, 1}}};
-  queryTest(index, tokenizer, lexicon, query1, expected_result1);
+  queryTest(index, query_processor, query1, expected_result1);
 
   std::string query2 = "baz";
   std::vector<MatchInfo> expected_result2{MatchInfo{1, 3, std::vector<int>{1}}};
-  queryTest(index, tokenizer, lexicon, query2, expected_result2);
+  queryTest(index, query_processor, query2, expected_result2);
 
   std::string query3 = "foo baz bun";
   std::vector<MatchInfo> expected_result3{MatchInfo{1, 3, std::vector<int>{1, 1, 1}}};
-  queryTest(index, tokenizer, lexicon, query3, expected_result3);
+  queryTest(index, query_processor, query3, expected_result3);
 
   std::string query4 = "foo bar baz";
   std::vector<MatchInfo> expected_result4;
-  queryTest(index, tokenizer, lexicon, query4, expected_result4);
+  queryTest(index, query_processor, query4, expected_result4);
 
   std::string query5 = "xxx";
   std::vector<MatchInfo> expected_result5;
-  queryTest(index, tokenizer, lexicon, query5, expected_result5);
+  queryTest(index, query_processor, query5, expected_result5);
 }
 
 TEST(Index, save_and_load) {
@@ -197,40 +196,46 @@ TEST(Index, save_and_load) {
   IndexBuilder index_builder(documents, icu::Locale::getRoot());
   Index generated_index = index_builder.getIndex();
   Tokenizer tokenizer;
-  Lexicon lexicon = index_builder.getLexicon();
+  Lexicon generated_lexicon = index_builder.getLexicon();
 
-  std::string index_file_name = "/tmp/test_index_save_and_load.lexicon";
-  std::ofstream ofs(index_file_name);
-  generated_index.save(ofs);
-  ofs.close();
+  std::string index_file_name = "/tmp/test_index_save_and_load.index";
+  std::ofstream ofs_index(index_file_name);
+  generated_index.save(ofs_index);
+  ofs_index.close();
+  std::string lexicon_file_name = "/tmp/test_index_save_and_load.lexicon";
+  std::ofstream ofs_lexicon(lexicon_file_name);
+  generated_lexicon.save(ofs_lexicon);
+  ofs_lexicon.close();
 
-  std::ifstream ifs(index_file_name);
-  Index loaded_index(ifs);
+  std::ifstream ifs_index(index_file_name);
+  Index loaded_index(ifs_index);
+  std::ifstream ifs_lexicon(lexicon_file_name);
+  QueryProcessor query_processor(ifs_lexicon);
 
   std::string query0 = "foo";
   std::vector<MatchInfo> expected_result0{MatchInfo{0, 4, std::vector<int>{3}},
 					  MatchInfo{1, 3, std::vector<int>{1}}};
-  queryTest(loaded_index, tokenizer, lexicon, query0, expected_result0);
+  queryTest(loaded_index, query_processor, query0, expected_result0);
 
   std::string query1 = "foo bar";
   std::vector<MatchInfo> expected_result1{MatchInfo{0, 4, std::vector<int>{3, 1}}};
-  queryTest(loaded_index, tokenizer, lexicon, query1, expected_result1);
+  queryTest(loaded_index, query_processor, query1, expected_result1);
 
   std::string query2 = "baz";
   std::vector<MatchInfo> expected_result2{MatchInfo{1, 3, std::vector<int>{1}}};
-  queryTest(loaded_index, tokenizer, lexicon, query2, expected_result2);
+  queryTest(loaded_index, query_processor, query2, expected_result2);
 
   std::string query3 = "foo baz bun";
   std::vector<MatchInfo> expected_result3{MatchInfo{1, 3, std::vector<int>{1, 1, 1}}};
-  queryTest(loaded_index, tokenizer, lexicon, query3, expected_result3);
+  queryTest(loaded_index, query_processor, query3, expected_result3);
 
   std::string query4 = "foo bar baz";
   std::vector<MatchInfo> expected_result4;
-  queryTest(loaded_index, tokenizer, lexicon, query4, expected_result4);
+  queryTest(loaded_index, query_processor, query4, expected_result4);
 
   std::string query5 = "xxx";
   std::vector<MatchInfo> expected_result5;
-  queryTest(loaded_index, tokenizer, lexicon, query5, expected_result5);
+  queryTest(loaded_index, query_processor, query5, expected_result5);
 }
 
 TEST(DocumentReader, read_stream) {

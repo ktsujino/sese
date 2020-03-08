@@ -6,6 +6,7 @@
 #include "document.h"
 #include "index.h"
 #include "lexicon.h"
+#include "query.h"
 #include "tokenizer.h"
 
 int main(int argc, char **argv) {
@@ -22,12 +23,11 @@ int main(int argc, char **argv) {
   sese::DocumentStore document_store = document_reader.getDocumentStore();
   sese::IndexBuilder index_builder(documents);
   sese::Index index = index_builder.getIndex();
-  sese::Lexicon lexicon = index_builder.getLexicon();
-  sese::Tokenizer tokenizer;
+  sese::QueryProcessor query_processor(index_builder.getLexicon());
 
-  std::string query(argv[2]);
-  std::vector<sese::WordID> query_ids = lexicon.tokens2ids(tokenizer.tokenize(query));
-  std::vector<sese::MatchInfo> results = index.query(query_ids);
+  std::string keywords(argv[2]);
+  sese::QueryInfo query_info = query_processor.processQuery(keywords);
+  std::vector<sese::MatchInfo> results = index.query(query_info);
   std::cout << "Search results:" << std::endl;
   for (const sese::MatchInfo &result : results) {
     sese::Document document = document_store.getDocument(result.document_id);

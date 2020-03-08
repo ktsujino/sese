@@ -1,5 +1,5 @@
-#ifndef _SESS_LEXICON_H_
-#define _SESS_LEXICON_H_
+#ifndef _SESE_LEXICON_H_
+#define _SESE_LEXICON_H_
 
 #include <iostream>
 #include <map>
@@ -53,4 +53,4 @@ private:
 
 } // namespace sese
 
-# endif // #ifndef _SESS_LEXICON_H_
+# endif // #ifndef _SESE_LEXICON_H_
