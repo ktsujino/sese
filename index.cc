@@ -9,8 +9,8 @@
 
 #include "document.h"
 #include "lexicon.h"
-#include "util.h"
 #include "tokenizer.h"
+#include "util.h"
 
 namespace sese {
 
