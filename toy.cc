@@ -27,10 +27,10 @@ int main(int argc, char **argv) {
 
   std::string query(argv[2]);
   std::vector<sese::WordID> query_ids = lexicon.tokens2ids(tokenizer.tokenize(query));
-  std::vector<sese::DocumentID> results = index.query(query_ids);
+  std::vector<sese::MatchInfo> results = index.query(query_ids);
   std::cout << "Search results:" << std::endl;
-  for (const sese::DocumentID &result : results) {
-    sese::Document document = document_store.getDocument(result);
+  for (const sese::MatchInfo &result : results) {
+    sese::Document document = document_store.getDocument(result.document_id);
     std::cout << document.title << "\t" << document.url << std::endl;
   }
   return 0;

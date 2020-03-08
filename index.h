@@ -14,17 +14,34 @@
 
 namespace sese {
 
+struct MatchInfo {
+  MatchInfo(DocumentID document_id,
+	    int document_length,
+	    std::vector<int> term_frequency):
+    document_id(document_id),
+    document_length(document_length),
+    term_frequency(term_frequency){};
+  DocumentID document_id;
+  int document_length;
+  std::vector<int> term_frequency;
+};
+
 class Index {
 public:
   Index(std::istream &ist);
   void save(std::ostream &ost) const;
-  std::vector<DocumentID> query(const std::vector<WordID> &keywords) const;
+  std::vector<MatchInfo> query(const std::vector<WordID> &keywords) const;
 
 private:
   Index() {};
   void load(std::istream &ist);
+  std::vector<DocumentID> calcMatchSet(const std::vector<WordID> &keywords) const;
   std::vector<DocumentID> wordID2DocumentList(const WordID &word_id) const;
+  MatchInfo getMatchInfo(const DocumentID &document_id,
+			 const std::vector<WordID> &keywords) const;
   std::map<WordID, std::vector<DocumentID>> posting_lists_;
+  std::map<DocumentID, int> document_length_;
+  std::map<std::pair<DocumentID, WordID>, int> term_frequency_;
 
   friend class IndexBuilder;
 };

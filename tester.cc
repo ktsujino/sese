@@ -140,11 +140,16 @@ void queryTest(const Index &index,
 	       const Tokenizer &tokenizer,
 	       const Lexicon &lexicon,
 	       const std::string &query,
-	       std::vector<DocumentID> expected_result) {
+	       std::vector<MatchInfo> expected_result) {
   std::vector<UnicodeString> query_tokenized = tokenizer.tokenize(query);
   std::vector<WordID> query_wordids = lexicon.tokens2ids(query_tokenized);
-  std::vector<DocumentID> actual_result = index.query(query_wordids);
-  assertVectorEqual(expected_result, actual_result);
+  std::vector<MatchInfo> actual_result = index.query(query_wordids);
+  EXPECT_EQ(expected_result.size(), actual_result.size());
+  for (int pos = 0; pos < expected_result.size(); pos++) {
+    EXPECT_EQ(expected_result[pos].document_id, actual_result[pos].document_id);
+    EXPECT_EQ(expected_result[pos].document_length, actual_result[pos].document_length);
+    assertVectorEqual(expected_result[pos].term_frequency, actual_result[pos].term_frequency);
+  }
 }
 
 TEST(Index, query) {
@@ -159,27 +164,28 @@ TEST(Index, query) {
   Lexicon lexicon = index_builder.getLexicon();
 
   std::string query0 = "foo";
-  std::vector<DocumentID> expected_result0{DocumentID{0}, DocumentID{1}};
+  std::vector<MatchInfo> expected_result0{MatchInfo{0, 4, std::vector<int>{3}},
+					  MatchInfo{1, 3, std::vector<int>{1}}};
   queryTest(index, tokenizer, lexicon, query0, expected_result0);
 
   std::string query1 = "foo bar";
-  std::vector<DocumentID> expected_result1{DocumentID{0}};
+  std::vector<MatchInfo> expected_result1{MatchInfo{0, 4, std::vector<int>{3, 1}}};
   queryTest(index, tokenizer, lexicon, query1, expected_result1);
 
   std::string query2 = "baz";
-  std::vector<DocumentID> expected_result2{DocumentID{1}};
+  std::vector<MatchInfo> expected_result2{MatchInfo{1, 3, std::vector<int>{1}}};
   queryTest(index, tokenizer, lexicon, query2, expected_result2);
 
   std::string query3 = "foo baz bun";
-  std::vector<DocumentID> expected_result3{DocumentID{1}};
+  std::vector<MatchInfo> expected_result3{MatchInfo{1, 3, std::vector<int>{1, 1, 1}}};
   queryTest(index, tokenizer, lexicon, query3, expected_result3);
 
   std::string query4 = "foo bar baz";
-  std::vector<DocumentID> expected_result4{};
+  std::vector<MatchInfo> expected_result4;
   queryTest(index, tokenizer, lexicon, query4, expected_result4);
 
   std::string query5 = "xxx";
-  std::vector<DocumentID> expected_result5{};
+  std::vector<MatchInfo> expected_result5;
   queryTest(index, tokenizer, lexicon, query5, expected_result5);
 }
 
@@ -200,28 +206,30 @@ TEST(Index, save_and_load) {
 
   std::ifstream ifs(index_file_name);
   Index loaded_index(ifs);
+
   std::string query0 = "foo";
-  std::vector<DocumentID> expected_result0{DocumentID{0}, DocumentID{1}};
+  std::vector<MatchInfo> expected_result0{MatchInfo{0, 4, std::vector<int>{3}},
+					  MatchInfo{1, 3, std::vector<int>{1}}};
   queryTest(loaded_index, tokenizer, lexicon, query0, expected_result0);
 
   std::string query1 = "foo bar";
-  std::vector<DocumentID> expected_result1{DocumentID{0}};
+  std::vector<MatchInfo> expected_result1{MatchInfo{0, 4, std::vector<int>{3, 1}}};
   queryTest(loaded_index, tokenizer, lexicon, query1, expected_result1);
 
   std::string query2 = "baz";
-  std::vector<DocumentID> expected_result2{DocumentID{1}};
+  std::vector<MatchInfo> expected_result2{MatchInfo{1, 3, std::vector<int>{1}}};
   queryTest(loaded_index, tokenizer, lexicon, query2, expected_result2);
 
   std::string query3 = "foo baz bun";
-  std::vector<DocumentID> expected_result3{DocumentID{1}};
+  std::vector<MatchInfo> expected_result3{MatchInfo{1, 3, std::vector<int>{1, 1, 1}}};
   queryTest(loaded_index, tokenizer, lexicon, query3, expected_result3);
 
   std::string query4 = "foo bar baz";
-  std::vector<DocumentID> expected_result4{};
+  std::vector<MatchInfo> expected_result4;
   queryTest(loaded_index, tokenizer, lexicon, query4, expected_result4);
 
   std::string query5 = "xxx";
-  std::vector<DocumentID> expected_result5{};
+  std::vector<MatchInfo> expected_result5;
   queryTest(loaded_index, tokenizer, lexicon, query5, expected_result5);
 }
 

@@ -19,6 +19,7 @@ public:
   void save(std::ostream &ost) const;
   std::vector<WordID> tokens2ids(const std::vector<UnicodeString> &tokens) const;
   std::vector<UnicodeString> ids2tokens(const std::vector<WordID> &ids) const;
+  std::vector<int> ids2DocumentFrequencies(const std::vector<WordID> &ids) const;
   WordID token2id(const UnicodeString &token) const;
   UnicodeString id2token(const WordID &id) const;
   int id2DocumentFrequency(const WordID &id) const;

@@ -38,6 +38,14 @@ std::vector<UnicodeString> Lexicon::ids2tokens(const std::vector<WordID> &ids) c
   return tokens;
 }
 
+std::vector<int> Lexicon::ids2DocumentFrequencies(const std::vector<WordID> &ids) const {
+  std::vector<int> frequencies;
+  for (const WordID id : ids) {
+    frequencies.push_back(id2DocumentFrequency(id));
+  }
+  return frequencies;
+}
+
 WordID Lexicon::token2id(const UnicodeString &token) const {
   const auto &it = token2id_.find(token);
   if (it != token2id_.end()) {
