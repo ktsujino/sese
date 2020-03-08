@@ -78,11 +78,11 @@ IndexBuilder::IndexBuilder(const std::vector<Document> &documents, icu::Locale l
   }
 }
 
-Index IndexBuilder::getIndex() {
-  return index_;
+Index &&IndexBuilder::getIndex() {
+  return std::move(index_);
 }
 
-Lexicon IndexBuilder::getLexicon() {
+Lexicon &&IndexBuilder::getLexicon() {
   return lexicon_builder_.getLexicon();
 }
 

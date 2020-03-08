@@ -41,7 +41,7 @@ private:
 class LexiconBuilder {
 public:
   std::vector<WordID> readTokens(const std::vector<UnicodeString> &tokens);
-  Lexicon getLexicon();
+  Lexicon &&getLexicon();
 
 private:
   Lexicon lexicon_;

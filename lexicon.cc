@@ -92,8 +92,8 @@ std::vector<WordID> LexiconBuilder::readTokens(const std::vector<UnicodeString> 
   return ids;
 }
 
-Lexicon LexiconBuilder::getLexicon() {
-  return lexicon_;
+Lexicon &&LexiconBuilder::getLexicon() {
+  return std::move(lexicon_);
 }
 
 } // namespace sese

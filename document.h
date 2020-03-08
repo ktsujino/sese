@@ -47,7 +47,7 @@ private:
 class DocumentReader {
 public:
   std::vector<Document> readXML(std::istream &ist);
-  DocumentStore getDocumentStore();
+  DocumentStore &&getDocumentStore();
 
 private:
   DocumentStore document_store_;

@@ -32,8 +32,8 @@ private:
 class IndexBuilder {
 public:
   IndexBuilder(const std::vector<Document> &documents, icu::Locale locale=icu::Locale::getRoot(), bool enable_normalize=true);
-  Index getIndex();
-  Lexicon getLexicon();
+  Index &&getIndex();
+  Lexicon &&getLexicon();
 
 private:
   void addDocument(const Document &document, bool enable_normalize);

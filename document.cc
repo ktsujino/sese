@@ -100,8 +100,8 @@ std::vector<Document> DocumentReader::readXML(std::istream &ist) {
   return documents;
 }
 
-DocumentStore DocumentReader::getDocumentStore() {
-  return document_store_;
+DocumentStore &&DocumentReader::getDocumentStore() {
+  return std::move(document_store_);
 }
 
 
