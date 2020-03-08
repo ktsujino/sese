@@ -79,7 +79,7 @@ void Lexicon::load(std::istream &ist) {
   }
 }
 
-std::vector<WordID> LexiconBuilder::readTokens(const std::vector<UnicodeString> &tokens) {
+std::vector<WordID> LexiconBuilder::registerTokens(const std::vector<UnicodeString> &tokens) {
   std::vector<WordID> ids;
   for (const UnicodeString &token: tokens) {
     if (lexicon_.token2id_.count(token) ==  0) {

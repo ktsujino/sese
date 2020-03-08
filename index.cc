@@ -88,7 +88,7 @@ Lexicon &&IndexBuilder::getLexicon() {
 
 void IndexBuilder::addDocument(const Document &document, bool enable_normalize) {
   std::vector<UnicodeString> tokens = tokenizeDocument(document, enable_normalize);
-  std::vector<WordID> word_ids = lexicon_builder_.readTokens(tokens);
+  std::vector<WordID> word_ids = lexicon_builder_.registerTokens(tokens);
   for (const auto &word_id : word_ids) {
     index_.posting_lists_[word_id].push_back(document.document_id);
   }

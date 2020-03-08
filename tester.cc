@@ -73,7 +73,7 @@ TEST(Lexicon, conversion) {
 TEST(Lexicon, save_and_load) {
   LexiconBuilder lexicon_builder;
   std::vector<UnicodeString> corpus = usVector({"foo", "bar", "foo"});
-  lexicon_builder.readTokens(corpus);
+  lexicon_builder.registerTokens(corpus);
   Lexicon generated_lexicon = lexicon_builder.getLexicon();
 
   std::string lexicon_file_name = "/tmp/test_lexicon_save_and_load.lexicon";
@@ -99,7 +99,7 @@ TEST(LexiconBuilder, read_and_get_lexicon) {
   std::vector<UnicodeString> corpus = usVector({"foo", "bar", "foo"});
   std::vector<WordID> expected_ids_builder({0, 1, 0});
 
-  std::vector<WordID> actual_ids_builder = lexicon_builder.readTokens(corpus);
+  std::vector<WordID> actual_ids_builder = lexicon_builder.registerTokens(corpus);
   assertVectorEqual(expected_ids_builder, actual_ids_builder);
 
   Lexicon lexicon = lexicon_builder.getLexicon();

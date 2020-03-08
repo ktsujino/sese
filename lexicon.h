@@ -40,7 +40,7 @@ private:
 // Constructs Lexicon from corpus
 class LexiconBuilder {
 public:
-  std::vector<WordID> readTokens(const std::vector<UnicodeString> &tokens);
+  std::vector<WordID> registerTokens(const std::vector<UnicodeString> &tokens);
   Lexicon &&getLexicon();
 
 private:
