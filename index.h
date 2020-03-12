@@ -1,5 +1,5 @@
-#ifndef _SESS_INDEX_H
-#define _SESS_INDEX_H
+#ifndef _SESE_INDEX_H
+#define _SESE_INDEX_H
 
 #include <iostream>
 #include <vector>
@@ -65,4 +65,4 @@ private:
 
 } // namespace sese
 
-#endif // #ifndef _SESS_INDEX_H
+#endif // #ifndef _SESE_INDEX_H

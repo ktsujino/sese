@@ -1,9 +1,3 @@
-#include "document.h"
-#include "index.h"
-#include "lexicon.h"
-#include "query.h"
-#include "tokenizer.h"
-
 #include <cstdio>
 #include <fstream>
 #include <sstream>
@@ -13,6 +7,13 @@
 #include <unicode/ustream.h>
 
 #include <gtest/gtest.h>
+
+#include "document.h"
+#include "index.h"
+#include "lexicon.h"
+#include "query.h"
+#include "ranker.h"
+#include "tokenizer.h"
 
 namespace sese {
 
@@ -153,7 +154,7 @@ void queryTest(const Index &index,
 
 TEST(Index, query) {
   Document document0("url0", "foo", DocumentID(0), std::vector<std::string>{"foo foo bar"});
-  Document document1("url1", "foo", DocumentID(1),std::vector<std::string>{"baz", "bun"});
+  Document document1("url1", "foo", DocumentID(1), std::vector<std::string>{"baz", "bun"});
 
   std::vector<Document> documents{document0, document1};
 
@@ -267,6 +268,26 @@ TEST(DocumentReader, read_stream) {
   EXPECT_EQ("url0", document0.url);
   EXPECT_EQ("title0", document0.title);
   assertVectorEqual(std::vector<std::string>{}, document0.body);
+}
+
+TEST(Ranker, rank) {
+  std::vector<MatchInfo> documents{MatchInfo{DocumentID(0),
+					     4,
+					     std::vector<int>{2,1}},
+				   MatchInfo{DocumentID(1),
+					     6,
+					     std::vector<int>{1,3}}};
+  QueryInfo query_info{"foo bar",
+		       std::vector<UnicodeString>{UnicodeString::fromUTF8("foo"),
+						  UnicodeString::fromUTF8("bar")},
+		       std::vector<WordID>{WordID(0), WordID(1)},
+		       std::vector<int>{2,4}};
+  Ranker ranker;
+  std::vector<std::pair<MatchInfo, RankScore>> ranked = ranker.rank(documents, query_info);
+  ASSERT_FLOAT_EQ(0.9016844005556022, ranked[0].second); // (2.0 / 4) / log(2) + (1.0 / 4) / log(4) = 0.9016844005556022
+  ASSERT_FLOAT_EQ(0.6011229337037347, ranked[1].second); // (1.0 / 6) / log(2) + (3.0 / 6) / log(4) = 0.6011229337037347
+  EXPECT_EQ(DocumentID(0), ranked[0].first.document_id);
+  EXPECT_EQ(DocumentID(1), ranked[1].first.document_id);
 }
 
 } // namespace sese

@@ -3,7 +3,7 @@ ICU_PREFIX=/usr/local/opt/icu4c
 LIBXML2_PREFIX=/usr/local/opt/libxml2
 ICU_INC=$(ICU_PREFIX)/lib/icu/Makefile.inc
 TARGET=toy tester
-OBJECTS=document.o index.o lexicon.o query.o tokenizer.o util.o
+OBJECTS=document.o index.o lexicon.o query.o ranker.o tokenizer.o util.o
 TEST_OBJECTS=tester.o
 
 include $(ICU_INC)
