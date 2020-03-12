@@ -6,6 +6,7 @@
 #include "document.h"
 #include "index.h"
 #include "lexicon.h"
+#include "ranker.h"
 #include "query.h"
 #include "tokenizer.h"
 
@@ -24,14 +25,16 @@ int main(int argc, char **argv) {
   sese::IndexBuilder index_builder(documents);
   sese::Index index = index_builder.getIndex();
   sese::QueryProcessor query_processor(index_builder.getLexicon());
+  sese::Ranker ranker;
 
   std::string keywords(argv[2]);
   sese::QueryInfo query_info = query_processor.processQuery(keywords);
   std::vector<sese::MatchInfo> results = index.query(query_info);
+  std::vector<std::pair<sese::MatchInfo, sese::RankScore>> ranked_results = ranker.rank(results, query_info);
   std::cout << "Search results:" << std::endl;
-  for (const sese::MatchInfo &result : results) {
-    sese::Document document = document_store.getDocument(result.document_id);
-    std::cout << document.title << "\t" << document.url << std::endl;
+  for (const std::pair<sese::MatchInfo, sese::RankScore> &result : ranked_results) {
+    sese::Document document = document_store.getDocument(result.first.document_id);
+    std::cout << document.title << "\t" << document.url << "\t" << result.second << std::endl;
   }
   return 0;
 }
