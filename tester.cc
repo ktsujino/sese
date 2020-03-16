@@ -284,8 +284,8 @@ TEST(Ranker, rank) {
 		       std::vector<int>{2,4}};
   Ranker ranker;
   std::vector<std::pair<MatchInfo, RankScore>> ranked = ranker.rank(documents, query_info);
-  ASSERT_FLOAT_EQ(0.9016844005556022, ranked[0].second); // (2.0 / 4) / log(2) + (1.0 / 4) / log(4) = 0.9016844005556022
-  ASSERT_FLOAT_EQ(0.6011229337037347, ranked[1].second); // (1.0 / 6) / log(2) + (3.0 / 6) / log(4) = 0.6011229337037347
+  EXPECT_FLOAT_EQ(0.9016844005556022, ranked[0].second); // (2.0 / 4) / log(2) + (1.0 / 4) / log(4) = 0.9016844005556022
+  EXPECT_FLOAT_EQ(0.6011229337037347, ranked[1].second); // (1.0 / 6) / log(2) + (3.0 / 6) / log(4) = 0.6011229337037347
   EXPECT_EQ(DocumentID(0), ranked[0].first.document_id);
   EXPECT_EQ(DocumentID(1), ranked[1].first.document_id);
 }
