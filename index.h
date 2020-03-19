@@ -55,7 +55,7 @@ public:
 
 private:
   void addDocument(const Document &document, bool enable_normalize);
-  std::vector<UnicodeString> tokenizeDocument(const Document &document, bool enable_normalize);
+  std::vector<icu::UnicodeString> tokenizeDocument(const Document &document, bool enable_normalize);
   Index index_;
   LexiconBuilder lexicon_builder_;
   Tokenizer tokenizer_;

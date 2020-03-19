@@ -1,5 +1,5 @@
-#ifndef _SESS_TOKENIZER_H_
-#define _SESS_TOKENIZER_H_
+#ifndef _SESE_TOKENIZER_H_
+#define _SESE_TOKENIZER_H_
 
 #include <vector>
 
@@ -8,13 +8,13 @@
 
 namespace sese {
 
-// Tokenizes utf-8 string and outputs word sequence as vector<UnicodeString>.
+// Tokenizes utf-8 string and outputs word sequence as vector<icu::UnicodeString>.
 class Tokenizer {
 public:
   Tokenizer(icu::Locale locale=icu::Locale::getRoot());
   ~Tokenizer();
-  std::vector<UnicodeString> tokenize(std::string utf8str, bool enable_normalize=true) const;
-  std::vector<UnicodeString> normalize(std::vector<UnicodeString> tokens) const;
+  std::vector<icu::UnicodeString> tokenize(std::string utf8str, bool enable_normalize=true) const;
+  std::vector<icu::UnicodeString> normalize(std::vector<icu::UnicodeString> tokens) const;
 
 private:
   icu::BreakIterator* bi_;
@@ -22,4 +22,4 @@ private:
 
 } // namespace sese
 
-# endif // #ifndef _SESS_TOKENIZER_H_
+# endif // #ifndef _SESE_TOKENIZER_H_

@@ -17,10 +17,10 @@
 
 namespace sese {
 
-std::vector<UnicodeString> usVector(std::initializer_list<std::string> l) {
-  std::vector<UnicodeString> us;
+std::vector<icu::UnicodeString> usVector(std::initializer_list<std::string> l) {
+  std::vector<icu::UnicodeString> us;
   std::for_each(l.begin(), l.end(),
-		[&us](const std::string &word){us.push_back(UnicodeString::fromUTF8(word));});
+		[&us](const std::string &word){us.push_back(icu::UnicodeString::fromUTF8(word));});
   return us;
 }
 
@@ -35,23 +35,23 @@ void assertVectorEqual(const std::vector<T> &expected,
 
 TEST(Tokenizer, not_normalized) {
   Tokenizer tokenizer;
-  std::vector<UnicodeString> tokenized = tokenizer.tokenize("I love NY!", false);
-  std::vector<UnicodeString> expected = usVector({"I", " ", "love", " ", "NY", "!"});
+  std::vector<icu::UnicodeString> tokenized = tokenizer.tokenize("I love NY!", false);
+  std::vector<icu::UnicodeString> expected = usVector({"I", " ", "love", " ", "NY", "!"});
   assertVectorEqual(expected, tokenized);
 }
 
 TEST(Tokenizer, normalized) {
   Tokenizer tokenizer;
-  std::vector<UnicodeString> tokenized = tokenizer.tokenize("She loves NY guys!", true);
-  std::vector<UnicodeString> expected = usVector({"she", "lov", "ny", "guy", "!"});
+  std::vector<icu::UnicodeString> tokenized = tokenizer.tokenize("She loves NY guys!", true);
+  std::vector<icu::UnicodeString> expected = usVector({"she", "lov", "ny", "guy", "!"});
   assertVectorEqual(expected, tokenized);
 }
 
 TEST(Lexicon, conversion) {
   Lexicon lexicon;
-  const UnicodeString foo = UnicodeString::fromUTF8("foo");
-  const UnicodeString bar = UnicodeString::fromUTF8("bar");
-  const UnicodeString baz = UnicodeString::fromUTF8("baz");
+  const icu::UnicodeString foo = icu::UnicodeString::fromUTF8("foo");
+  const icu::UnicodeString bar = icu::UnicodeString::fromUTF8("bar");
+  const icu::UnicodeString baz = icu::UnicodeString::fromUTF8("baz");
 
   lexicon.setEntry(foo, WordID(0), 1);
   lexicon.setEntry(bar, WordID(1), 2);
@@ -65,20 +65,20 @@ TEST(Lexicon, conversion) {
   EXPECT_EQ(2, lexicon.token2DocumentFrequency(bar));
   EXPECT_EQ(0, lexicon.token2DocumentFrequency(baz));
 
-  std::vector<UnicodeString> tokens({foo, bar, baz});
+  std::vector<icu::UnicodeString> tokens({foo, bar, baz});
   std::vector<WordID> expected_ids({0, 1, Lexicon::outOfVocabularyId()});
-  std::vector<UnicodeString> expected_backtranslated_tokens({foo, bar, Lexicon::outOfVocabularyToken()});
+  std::vector<icu::UnicodeString> expected_backtranslated_tokens({foo, bar, Lexicon::outOfVocabularyToken()});
 
   std::vector<WordID> actual_ids = lexicon.tokens2ids(tokens);
   assertVectorEqual(expected_ids, actual_ids);
-  std::vector<UnicodeString> actual_backtranslated_tokens = lexicon.ids2tokens(actual_ids);
+  std::vector<icu::UnicodeString> actual_backtranslated_tokens = lexicon.ids2tokens(actual_ids);
   assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
 }
 
 TEST(Lexicon, save_and_load) {
   LexiconBuilder lexicon_builder;
-  std::vector<UnicodeString> corpus0 = usVector({"foo", "bar"});
-    std::vector<UnicodeString> corpus1 = usVector({"foo", "foo"});
+  std::vector<icu::UnicodeString> corpus0 = usVector({"foo", "bar"});
+    std::vector<icu::UnicodeString> corpus1 = usVector({"foo", "foo"});
   lexicon_builder.registerTokens(corpus0);
   lexicon_builder.registerTokens(corpus1);
   Lexicon generated_lexicon = lexicon_builder.getLexicon();
@@ -91,18 +91,18 @@ TEST(Lexicon, save_and_load) {
   std::ifstream ifs(lexicon_file_name);
   Lexicon loaded_lexicon(ifs);
   
-  std::vector<UnicodeString> query = usVector({"foo", "bar", "baz"});
+  std::vector<icu::UnicodeString> query = usVector({"foo", "bar", "baz"});
   std::vector<WordID> expected_ids_lexicon({0, 1, Lexicon::outOfVocabularyId()});
-  std::vector<UnicodeString> expected_backtranslated_tokens({query[0], query[1], Lexicon::outOfVocabularyToken()});
+  std::vector<icu::UnicodeString> expected_backtranslated_tokens({query[0], query[1], Lexicon::outOfVocabularyToken()});
 
   std::vector<WordID> actual_ids_lexicon = loaded_lexicon.tokens2ids(query);
   assertVectorEqual(expected_ids_lexicon, actual_ids_lexicon);
-  std::vector<UnicodeString> actual_backtranslated_tokens = loaded_lexicon.ids2tokens(actual_ids_lexicon);
+  std::vector<icu::UnicodeString> actual_backtranslated_tokens = loaded_lexicon.ids2tokens(actual_ids_lexicon);
   assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
 
-  EXPECT_EQ(2, loaded_lexicon.token2DocumentFrequency(UnicodeString::fromUTF8("foo")));
-  EXPECT_EQ(1, loaded_lexicon.token2DocumentFrequency(UnicodeString::fromUTF8("bar")));
-  EXPECT_EQ(0, loaded_lexicon.token2DocumentFrequency(UnicodeString::fromUTF8("baz")));
+  EXPECT_EQ(2, loaded_lexicon.token2DocumentFrequency(icu::UnicodeString::fromUTF8("foo")));
+  EXPECT_EQ(1, loaded_lexicon.token2DocumentFrequency(icu::UnicodeString::fromUTF8("bar")));
+  EXPECT_EQ(0, loaded_lexicon.token2DocumentFrequency(icu::UnicodeString::fromUTF8("baz")));
   EXPECT_EQ(2, loaded_lexicon.id2DocumentFrequency(WordID(0)));
   EXPECT_EQ(1, loaded_lexicon.id2DocumentFrequency(WordID(1)));
   EXPECT_EQ(0, loaded_lexicon.id2DocumentFrequency(WordID(2)));
@@ -110,9 +110,9 @@ TEST(Lexicon, save_and_load) {
   
 TEST(LexiconBuilder, read_and_get_lexicon) {
   LexiconBuilder lexicon_builder;
-  std::vector<UnicodeString> corpus0 = usVector({"foo", "bar"});
+  std::vector<icu::UnicodeString> corpus0 = usVector({"foo", "bar"});
   std::vector<WordID> expected_ids_builder0({0, 1});
-  std::vector<UnicodeString> corpus1 = usVector({"foo", "foo"});
+  std::vector<icu::UnicodeString> corpus1 = usVector({"foo", "foo"});
   std::vector<WordID> expected_ids_builder1({0, 0});
 
   std::vector<WordID> actual_ids_builder0 = lexicon_builder.registerTokens(corpus0);
@@ -121,18 +121,18 @@ TEST(LexiconBuilder, read_and_get_lexicon) {
   assertVectorEqual(expected_ids_builder1, actual_ids_builder1);
 
   Lexicon lexicon = lexicon_builder.getLexicon();
-  std::vector<UnicodeString> query = usVector({"foo", "bar", "baz"});
+  std::vector<icu::UnicodeString> query = usVector({"foo", "bar", "baz"});
   std::vector<WordID> expected_ids_lexicon({0, 1, Lexicon::outOfVocabularyId()});
-  std::vector<UnicodeString> expected_backtranslated_tokens({query[0], query[1], Lexicon::outOfVocabularyToken()});
+  std::vector<icu::UnicodeString> expected_backtranslated_tokens({query[0], query[1], Lexicon::outOfVocabularyToken()});
 
   std::vector<WordID> actual_ids_lexicon = lexicon.tokens2ids(query);
   assertVectorEqual(expected_ids_lexicon, actual_ids_lexicon);
-  std::vector<UnicodeString> actual_backtranslated_tokens = lexicon.ids2tokens(actual_ids_lexicon);
+  std::vector<icu::UnicodeString> actual_backtranslated_tokens = lexicon.ids2tokens(actual_ids_lexicon);
   assertVectorEqual(expected_backtranslated_tokens, actual_backtranslated_tokens);
 
-  EXPECT_EQ(2, lexicon.token2DocumentFrequency(UnicodeString::fromUTF8("foo")));
-  EXPECT_EQ(1, lexicon.token2DocumentFrequency(UnicodeString::fromUTF8("bar")));
-  EXPECT_EQ(0, lexicon.token2DocumentFrequency(UnicodeString::fromUTF8("baz")));
+  EXPECT_EQ(2, lexicon.token2DocumentFrequency(icu::UnicodeString::fromUTF8("foo")));
+  EXPECT_EQ(1, lexicon.token2DocumentFrequency(icu::UnicodeString::fromUTF8("bar")));
+  EXPECT_EQ(0, lexicon.token2DocumentFrequency(icu::UnicodeString::fromUTF8("baz")));
   EXPECT_EQ(2, lexicon.id2DocumentFrequency(WordID(0)));
   EXPECT_EQ(1, lexicon.id2DocumentFrequency(WordID(1)));
   EXPECT_EQ(0, lexicon.id2DocumentFrequency(WordID(2)));
@@ -278,8 +278,8 @@ TEST(Ranker, rank) {
 					     6,
 					     std::vector<int>{1,3}}};
   QueryInfo query_info{"foo bar",
-		       std::vector<UnicodeString>{UnicodeString::fromUTF8("foo"),
-						  UnicodeString::fromUTF8("bar")},
+		       std::vector<icu::UnicodeString>{icu::UnicodeString::fromUTF8("foo"),
+						  icu::UnicodeString::fromUTF8("bar")},
 		       std::vector<WordID>{WordID(0), WordID(1)},
 		       std::vector<int>{2,4}};
   Ranker ranker;

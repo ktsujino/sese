@@ -137,7 +137,7 @@ Lexicon &&IndexBuilder::getLexicon() {
 }
 
 void IndexBuilder::addDocument(const Document &document, bool enable_normalize) {
-  std::vector<UnicodeString> tokens = tokenizeDocument(document, enable_normalize);
+  std::vector<icu::UnicodeString> tokens = tokenizeDocument(document, enable_normalize);
   std::vector<WordID> word_ids = lexicon_builder_.registerTokens(tokens);
   std::set<WordID> unique_word_ids(word_ids.begin(), word_ids.end());
   for (const auto &word_id : unique_word_ids) {
@@ -153,12 +153,12 @@ void IndexBuilder::addDocument(const Document &document, bool enable_normalize) 
   index_.document_length_[document.document_id] = word_ids.size();
 }
 
-std::vector<UnicodeString> IndexBuilder::tokenizeDocument(const Document &document, bool enable_normalize) {
-  std::vector<UnicodeString> tokens;
-  std::vector<UnicodeString> tokenized_title = tokenizer_.tokenize(document.title, enable_normalize);
+std::vector<icu::UnicodeString> IndexBuilder::tokenizeDocument(const Document &document, bool enable_normalize) {
+  std::vector<icu::UnicodeString> tokens;
+  std::vector<icu::UnicodeString> tokenized_title = tokenizer_.tokenize(document.title, enable_normalize);
   tokens.insert(tokens.end(), tokenized_title.begin(), tokenized_title.end());
   for (const std::string &line : document.body) {
-    std::vector<UnicodeString> tokenized_line = tokenizer_.tokenize(line, enable_normalize);
+    std::vector<icu::UnicodeString> tokenized_line = tokenizer_.tokenize(line, enable_normalize);
     tokens.insert(tokens.end(), tokenized_line.begin(), tokenized_line.end());
   }
   return tokens;

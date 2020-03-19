@@ -14,14 +14,14 @@ namespace sese {
 
 struct QueryInfo {
   QueryInfo(std::string keywords,
-	    std::vector<UnicodeString> tokens,
+	    std::vector<icu::UnicodeString> tokens,
 	    std::vector<WordID> word_ids,
 	    std::vector<int> document_frequencies) :
     keywords(keywords), tokens(tokens),
     word_ids(word_ids), document_frequencies(document_frequencies) {
   };
   std::string keywords;
-  std::vector<UnicodeString> tokens;
+  std::vector<icu::UnicodeString> tokens;
   std::vector<WordID> word_ids;
   std::vector<int> document_frequencies;
 };
