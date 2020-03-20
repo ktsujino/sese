@@ -26,6 +26,7 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 #include <vector>
@@ -201,12 +202,18 @@ handle_request(
         res.set(http::field::content_type, "text/html");
         res.keep_alive(req.keep_alive());
 	std::vector<sese::Document> documents = search_engine.query(keywords);
-	std::string body;
-	for (int i = 0; i < documents.size() && i < 20; i++) {
+	std::stringstream ss;
+	ss << "<html>" << std::endl;
+	ss << "<head>" << std::endl;
+	ss << "  <meta charset=\"utf-8\"/>" << std::endl;
+	ss << "</head>" << std::endl;
+	ss << "<body>" << std::endl;
+	for (int i = 0; i < documents.size() && i < 100; i++) {
 	  sese::Document document = documents[i];
-	  body += "<p><a href=\"" + document.url + "\">" + document.title + "</a></p>";
+	  ss << "<p><a href=\"" << document.url << "\">" << document.title << "</a></p>" << std::endl;
 	}
-        res.body() = body;
+	ss << "</body>" << std::endl;
+        res.body() = ss.str();
         res.prepare_payload();
         return res;
       };
