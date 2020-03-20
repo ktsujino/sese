@@ -2,7 +2,7 @@ GTEST_PREFIX=/usr/local
 CPPREST_PREFIX=/usr/local
 ICU_PREFIX=/usr/local/opt/icu4c
 ICU_INC=$(ICU_PREFIX)/lib/icu/Makefile.inc
-TARGET=indexer local_engine api_server tester toy
+TARGET=indexer cli_server api_server tester toy
 OBJECTS=document.o index.o lexicon.o query.o ranker.o tokenizer.o util.o search_engine.o
 TEST_OBJECTS=tester.o
 
@@ -13,7 +13,7 @@ all: $(TARGET)
 toy: $(OBJECTS) toy.o
 	$(LINK.cc) -o $@ $^ $(ICULIBS) $(ICULIBS_ICUIO)
 
-local_engine: $(OBJECTS) local_engine.o
+cli_server: $(OBJECTS) cli_server.o
 	$(LINK.cc) -o $@ $^ $(ICULIBS) $(ICULIBS_ICUIO)
 
 api_server: $(OBJECTS) http_server_async.o

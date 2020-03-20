@@ -24,7 +24,8 @@ int main(int argc, char **argv) {
     std::getline(std::cin, keywords);
     std::cout << keywords << std::endl;
     std::vector<sese::Document> documents = search_engine.query(keywords);
-    for (const sese::Document &document : documents) {
+    for (int i = 0; i < documents.size() && i < 20; i++) {
+      sese::Document document = documents[i];
       std::cout << document.document_id << "\t" << document.title << "\t" << document.url << std::endl;
     }
   }

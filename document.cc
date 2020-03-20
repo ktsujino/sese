@@ -71,7 +71,9 @@ void DocumentStore::load(std::istream &ist) {
 
 void DocumentStore::addDocument(Document document) {
   id2document_[document.document_id] = document;
-  std::cout << "Read " << document.title << std::endl;
+  if (document.document_id % 10000 == 0) {
+    std::cout << "Read " << document.document_id << " documents" << std::endl;
+  }
 }
 
 std::vector<Document> DocumentReader::readXML(std::istream &ist) {

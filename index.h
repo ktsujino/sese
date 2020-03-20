@@ -49,13 +49,14 @@ private:
 
 class IndexBuilder {
 public:
-  IndexBuilder(const std::vector<Document> &documents, icu::Locale locale=icu::Locale::getRoot(), bool enable_normalize=true);
+  IndexBuilder(icu::Locale locale=icu::Locale::getRoot(), bool enable_normalize=true);
+  void addDocument(const Document &document);
   Index &&getIndex();
   Lexicon &&getLexicon();
 
 private:
-  void addDocument(const Document &document, bool enable_normalize);
   std::vector<icu::UnicodeString> tokenizeDocument(const Document &document, bool enable_normalize);
+  bool enable_normalize_;
   Index index_;
   LexiconBuilder lexicon_builder_;
   Tokenizer tokenizer_;

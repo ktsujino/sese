@@ -10,14 +10,15 @@
 int main(int argc, char* argv[])
 {
   sese::DocumentReader document_reader;
-  std::vector<sese::Document> documents;
+  sese::IndexBuilder index_builder;
   for (int i = 2; i < argc; i++) {
     std::ifstream ifs(argv[i]);
-    std::vector<sese::Document> documents_part = document_reader.readXML(ifs);
-    documents.insert(documents.end(), documents_part.begin(), documents_part.end());
+    std::vector<sese::Document> documents = document_reader.readXML(ifs);
+    for (const sese::Document &document : documents) {
+      index_builder.addDocument(document);
+    }
   }
   sese::DocumentStore document_store = document_reader.getDocumentStore();
-  sese::IndexBuilder index_builder(documents);
   sese::Index index = index_builder.getIndex();
   sese::Lexicon lexicon = index_builder.getLexicon();
   std::ofstream ofs_lexicon(std::string(argv[1]) + "/lexicon.txt");

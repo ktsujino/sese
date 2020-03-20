@@ -121,24 +121,12 @@ MatchInfo Index::getMatchInfo(const DocumentID &document_id,
 		   term_frequency);
 }
 
-IndexBuilder::IndexBuilder(const std::vector<Document> &documents, icu::Locale locale, bool enable_normalize) :
-  tokenizer_(locale) {
-  for (DocumentID document_id = 0; document_id < documents.size(); document_id++) {
-    addDocument(documents[document_id], enable_normalize);
-  }
+IndexBuilder::IndexBuilder(icu::Locale locale, bool enable_normalize):
+  tokenizer_(locale), enable_normalize_(enable_normalize) {
 }
 
-Index &&IndexBuilder::getIndex() {
-  return std::move(index_);
-}
-
-Lexicon &&IndexBuilder::getLexicon() {
-  return lexicon_builder_.getLexicon();
-}
-
-void IndexBuilder::addDocument(const Document &document, bool enable_normalize) {
-  std::cout << "Added " << document.title << std::endl;
-  std::vector<icu::UnicodeString> tokens = tokenizeDocument(document, enable_normalize);
+void IndexBuilder::addDocument(const Document &document) {
+  std::vector<icu::UnicodeString> tokens = tokenizeDocument(document, enable_normalize_);
   std::vector<WordID> word_ids = lexicon_builder_.registerTokens(tokens);
   std::set<WordID> unique_word_ids(word_ids.begin(), word_ids.end());
   for (const auto &word_id : unique_word_ids) {
@@ -152,6 +140,17 @@ void IndexBuilder::addDocument(const Document &document, bool enable_normalize) 
     index_.term_frequency_[pair] += 1;
   }
   index_.document_length_[document.document_id] = word_ids.size();
+  if (document.document_id % 10000 == 0) {
+    std::cout << "Indexed " << document.document_id << " documents" << std::endl;
+  }
+}
+
+Index &&IndexBuilder::getIndex() {
+  return std::move(index_);
+}
+
+Lexicon &&IndexBuilder::getLexicon() {
+  return lexicon_builder_.getLexicon();
 }
 
 std::vector<icu::UnicodeString> IndexBuilder::tokenizeDocument(const Document &document, bool enable_normalize) {

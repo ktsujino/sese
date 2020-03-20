@@ -22,7 +22,10 @@ int main(int argc, char **argv) {
   sese::DocumentReader document_reader;
   std::vector<sese::Document> documents = document_reader.readXML(ifs);
   sese::DocumentStore document_store = document_reader.getDocumentStore();
-  sese::IndexBuilder index_builder(documents);
+  sese::IndexBuilder index_builder;
+  for (const sese::Document &document : documents) {
+    index_builder.addDocument(document);
+  }
   sese::Index index = index_builder.getIndex();
   sese::QueryProcessor query_processor(index_builder.getLexicon());
   sese::Ranker ranker;

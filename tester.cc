@@ -158,7 +158,10 @@ TEST(Index, query) {
 
   std::vector<Document> documents{document0, document1};
 
-  IndexBuilder index_builder(documents);
+  IndexBuilder index_builder;
+  for (const Document &document : documents) {
+    index_builder.addDocument(document);
+  }
   Index index = index_builder.getIndex();
   Lexicon lexicon = index_builder.getLexicon();
   QueryProcessor query_processor(lexicon);
@@ -194,7 +197,10 @@ TEST(Index, save_and_load) {
   Document document1("url1", "foo", DocumentID(1),std::vector<std::string>{"baz", "bun"});
 
   std::vector<Document> documents{document0, document1};
-  IndexBuilder index_builder(documents, icu::Locale::getRoot());
+  IndexBuilder index_builder;
+  for (const Document &document : documents) {
+    index_builder.addDocument(document);
+  }
   Index generated_index = index_builder.getIndex();
   Tokenizer tokenizer;
   Lexicon generated_lexicon = index_builder.getLexicon();
