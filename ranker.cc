@@ -9,7 +9,7 @@
 namespace sese {
 
 std::vector<std::pair<MatchInfo, RankScore>> Ranker::rank(const std::vector<MatchInfo> &documents,
-							  const QueryInfo &query_info) {
+							  const QueryInfo &query_info) const {
   std::vector<std::pair<MatchInfo, RankScore>> ranked_output;
   for (const MatchInfo &match_info : documents) {
     RankScore score = calcScore(match_info, query_info);
@@ -25,12 +25,12 @@ std::vector<std::pair<MatchInfo, RankScore>> Ranker::rank(const std::vector<Matc
 }
 
 RankScore Ranker::calcScore(const MatchInfo &match_info,
-			    const QueryInfo &query_info) {
+			    const QueryInfo &query_info) const {
   return tfidfScore(match_info, query_info);
 }
 
 RankScore Ranker::tfidfScore(const MatchInfo &match_info,
-			     const QueryInfo &query_info) {
+			     const QueryInfo &query_info) const {
   RankScore score{0};
   for (int pos = 0; pos < match_info.term_frequency.size(); pos++) {
     RankScore tf = static_cast<RankScore>(match_info.term_frequency[pos])
