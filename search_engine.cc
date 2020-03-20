@@ -13,11 +13,13 @@
 
 namespace sese {
 
-SearchEngine::SearchEngine(std::istream &ist,
+SearchEngine::SearchEngine(std::istream &ist_lexicon,
+			   std::istream &ist_index,
+			   std::istream &ist_document_store,
 			   icu::Locale locale) :
-  document_store_(ist),
-  index_(ist),
-  query_processor_(ist)
+  query_processor_(ist_lexicon, locale),
+  index_(ist_index),
+  document_store_(ist_document_store)
 {
 }
 

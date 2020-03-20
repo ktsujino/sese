@@ -137,6 +137,7 @@ Lexicon &&IndexBuilder::getLexicon() {
 }
 
 void IndexBuilder::addDocument(const Document &document, bool enable_normalize) {
+  std::cout << "Added " << document.title << std::endl;
   std::vector<icu::UnicodeString> tokens = tokenizeDocument(document, enable_normalize);
   std::vector<WordID> word_ids = lexicon_builder_.registerTokens(tokens);
   std::set<WordID> unique_word_ids(word_ids.begin(), word_ids.end());

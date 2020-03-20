@@ -17,7 +17,9 @@ namespace sese {
 
 class SearchEngine {
 public:
-  SearchEngine(std::istream &ist,
+  SearchEngine(std::istream &ist_lexicon,
+	       std::istream &ist_index,
+	       std::istream &ist_document_store,
 	       icu::Locale locale=icu::Locale::getRoot());
   std::vector<Document> query(const std::string &keywords) const;
 

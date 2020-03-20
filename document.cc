@@ -1,6 +1,8 @@
 #include "document.h"
 
 #include <iostream>
+#include <sstream>
+#include <string>
 #include <vector>
 #include <map>
 
@@ -17,12 +19,10 @@ DocumentStore::DocumentStore(std::istream &ist) {
 void DocumentStore::save(std::ostream &ost) const {
   ost << id2document_.size() << std::endl;
   for (const std::pair<DocumentID, Document> &entry : id2document_) {
-    ost << entry.first << "\t"
-	<< entry.second.document_id << "\t"
+    ost << entry.second.document_id << "\t"
 	<< entry.second.url << "\t"
 	<< entry.second.title << "\t"
-	<< entry.second.body.size()
-	<< std::endl;
+	<< entry.second.body.size() << std::endl;
     for (const std::string &line : entry.second.body) {
       ost << line << std::endl;
     }
@@ -43,21 +43,25 @@ int DocumentStore::size() {
 }
 
 void DocumentStore::load(std::istream &ist) {
+  std::string line;
+  std::cout << "DocumentStore::load" << std::endl;
   id2document_.clear();
   int num_documents;
   ist >> num_documents;
+  std::getline(ist, line);
+  std::cout << num_documents << std::endl;
   for (int i = 0; i < num_documents; i++) {
-    DocumentID document_id;
-    std::string url, title;
-    int body_size;
     std::vector<std::string> body;
-    ist >> document_id
-	>> url
-	>> title
-	>> body_size;
+    std::getline(ist, line);
+    
+    std::stringstream ss(line);
+    std::vector<std::string> fields = split(line, '\t');
+    DocumentID document_id = std::atoi(fields[0].c_str());
+    std::string url = fields[1];
+    std::string title = fields[2];
+    int body_size = std::atoi(fields[3].c_str());
     for (int bl = 0; bl < body_size; bl++) {
-      std::string line;
-      ist >> line;
+      std::getline(ist, line);
       body.push_back(line);
     }
     Document document(url, title, document_id, body);
@@ -67,10 +71,10 @@ void DocumentStore::load(std::istream &ist) {
 
 void DocumentStore::addDocument(Document document) {
   id2document_[document.document_id] = document;
+  std::cout << "Read " << document.title << std::endl;
 }
 
 std::vector<Document> DocumentReader::readXML(std::istream &ist) {
-  document_store_.id2document_.clear();
   std::vector<Document> documents;
   // dirty reader, should use proper XML parser
   std::string line;

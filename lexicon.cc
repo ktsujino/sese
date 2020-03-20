@@ -14,6 +14,7 @@ Lexicon::Lexicon(std::istream &ist) {
 }
 
 void Lexicon::save(std::ostream &ost) const {
+  ost << token2id_.size() << std::endl;
   for (const std::pair<icu::UnicodeString, WordID> &entry : token2id_) {
     icu::UnicodeString token = entry.first;
     WordID id = entry.second;
@@ -107,10 +108,15 @@ void Lexicon::setEntry(const icu::UnicodeString &token, const WordID id, const i
 }
 
 void Lexicon::load(std::istream &ist) {
+  std::cout << "Lexicon::load" << std::endl;
+  int lexicon_size;
+  ist >> lexicon_size;
+  std:: cout << lexicon_size << std::endl;
   icu::UnicodeString token;
   WordID id;
   int frequency;
-  while (ist >> token >> id >> frequency) {
+  for (int i = 0; i < lexicon_size; i++) {
+    ist >> token >> id >> frequency;
     setEntry(token, id, frequency);
   }
 }
