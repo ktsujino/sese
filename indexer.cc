@@ -17,6 +17,7 @@ int main(int argc, char* argv[])
     for (const sese::Document &document : documents) {
       index_builder.addDocument(document);
     }
+    std::cout << "Finished processing " << argv[i] << std::endl;
   }
   sese::DocumentStore document_store = document_reader.getDocumentStore();
   sese::Index index = index_builder.getIndex();
