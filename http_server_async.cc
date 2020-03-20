@@ -19,8 +19,10 @@
 #include <boost/asio/dispatch.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/config.hpp>
+
 #include <algorithm>
 #include <cstdlib>
+#include <fstream>
 #include <functional>
 #include <iostream>
 #include <memory>
@@ -28,10 +30,51 @@
 #include <thread>
 #include <vector>
 
+#include "search_engine.h"
+
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace http = beast::http;           // from <boost/beast/http.hpp>
 namespace net = boost::asio;            // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
+
+bool url_decode(const std::string& in, std::string& out)
+{
+  out.clear();
+  out.reserve(in.size());
+  for (std::size_t i = 0; i < in.size(); ++i)
+    {
+      if (in[i] == '%')
+	{
+	  if (i + 3 <= in.size())
+	    {
+	      int value = 0;
+	      std::istringstream is(in.substr(i + 1, 2));
+	      if (is >> std::hex >> value)
+		{
+		  out += static_cast<char>(value);
+		  i += 2;
+		}
+	      else
+		{
+		  return false;
+		}
+	    }
+	  else
+	    {
+	      return false;
+	    }
+	}
+      else if (in[i] == '+')
+	{
+	  out += ' ';
+	}
+      else
+	{
+	  out += in[i];
+	}
+    }
+  return true;
+}
 
 // Return a reasonable mime type based on the extension of a file.
 beast::string_view
@@ -106,6 +149,7 @@ template<
 void
 handle_request(
     beast::string_view doc_root,
+    const sese::SearchEngine &search_engine,
     http::request<Body, http::basic_fields<Allocator>>&& req,
     Send&& send)
 {
@@ -148,9 +192,27 @@ handle_request(
         return res;
     };
 
+    // Returns search result
+    auto const issue_search =
+      [&req](const std::string &keywords, const sese::SearchEngine &search_engine)
+      {
+        http::response<http::string_body> res{http::status::ok, req.version()};
+        res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+        res.set(http::field::content_type, "text/html");
+        res.keep_alive(req.keep_alive());
+	std::vector<sese::Document> documents = search_engine.query(keywords);
+	std::string body;
+	for (int i = 0; i < documents.size() && i < 20; i++) {
+	  sese::Document document = documents[i];
+	  body += "<p><a href=\"" + document.url + "\">" + document.title + "</a></p>";
+	}
+        res.body() = body;
+        res.prepare_payload();
+        return res;
+      };
+
     // Make sure we can handle the method
-    if( req.method() != http::verb::get &&
-        req.method() != http::verb::head)
+    if( req.method() != http::verb::get)
         return send(bad_request("Unknown HTTP-method"));
 
     // Request path must be absolute and not contain "..".
@@ -158,6 +220,15 @@ handle_request(
         req.target()[0] != '/' ||
         req.target().find("..") != beast::string_view::npos)
         return send(bad_request("Illegal request-target"));
+
+    // searh query
+    if(req.target().find("/search?keywords=") == 0) {
+      std::string keywords_enc = std::string(req.target()).substr(17, req.target().size() - 17);
+      std::string keywords;
+      url_decode(keywords_enc, keywords);
+      std::cout << "Keywords: " << keywords << std::endl;
+      return send(issue_search(keywords, search_engine));
+    }
 
     // Build the path to the requested file
     std::string path = path_cat(doc_root, req.target());
@@ -179,17 +250,6 @@ handle_request(
 
     // Cache the size since we need it after the move
     auto const size = body.size();
-
-    // Respond to HEAD request
-    if(req.method() == http::verb::head)
-    {
-        http::response<http::empty_body> res{http::status::ok, req.version()};
-        res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
-        res.set(http::field::content_type, mime_type(path));
-        res.content_length(size);
-        res.keep_alive(req.keep_alive());
-        return send(std::move(res));
-    }
 
     // Respond to GET request
     http::response<http::file_body> res{
@@ -254,6 +314,7 @@ class session : public std::enable_shared_from_this<session>
 
     beast::tcp_stream stream_;
     beast::flat_buffer buffer_;
+    std::shared_ptr<sese::SearchEngine const> search_engine_;
     std::shared_ptr<std::string const> doc_root_;
     http::request<http::string_body> req_;
     std::shared_ptr<void> res_;
@@ -263,9 +324,11 @@ public:
     // Take ownership of the stream
     session(
         tcp::socket&& socket,
-        std::shared_ptr<std::string const> const& doc_root)
+        std::shared_ptr<std::string const> const& doc_root,
+        std::shared_ptr<sese::SearchEngine const>& search_engine)
         : stream_(std::move(socket))
         , doc_root_(doc_root)
+	, search_engine_(search_engine)
         , lambda_(*this)
     {
     }
@@ -316,7 +379,7 @@ public:
             return fail(ec, "read");
 
         // Send the response
-        handle_request(*doc_root_, std::move(req_), lambda_);
+        handle_request(*doc_root_, *search_engine_, std::move(req_), lambda_);
     }
 
     void
@@ -363,15 +426,18 @@ class listener : public std::enable_shared_from_this<listener>
     net::io_context& ioc_;
     tcp::acceptor acceptor_;
     std::shared_ptr<std::string const> doc_root_;
+    std::shared_ptr<sese::SearchEngine const> search_engine_;
 
 public:
     listener(
         net::io_context& ioc,
         tcp::endpoint endpoint,
-        std::shared_ptr<std::string const> const& doc_root)
+        std::shared_ptr<std::string const> const& doc_root,
+	std::shared_ptr<sese::SearchEngine const> const& search_engine)
         : ioc_(ioc)
         , acceptor_(net::make_strand(ioc))
         , doc_root_(doc_root)
+	, search_engine_(search_engine)
     {
         beast::error_code ec;
 
@@ -440,7 +506,8 @@ private:
             // Create the session and run it
             std::make_shared<session>(
                 std::move(socket),
-                doc_root_)->run();
+                doc_root_,
+		search_engine_)->run();
         }
 
         // Accept another connection
@@ -453,18 +520,23 @@ private:
 int main(int argc, char* argv[])
 {
     // Check command line arguments.
-    if (argc != 5)
+    if (argc != 2)
     {
         std::cerr <<
-            "Usage: http-server-async <address> <port> <doc_root> <threads>\n" <<
-            "Example:\n" <<
-            "    http-server-async 0.0.0.0 8080 . 1\n";
+	  "Usage: " << argv[0] << " <index_dir>\n" <<
+	  "Example:\n" <<
+	  "    " << argv[0] << " ." << std::endl;
         return EXIT_FAILURE;
     }
-    auto const address = net::ip::make_address(argv[1]);
-    auto const port = static_cast<unsigned short>(std::atoi(argv[2]));
-    auto const doc_root = std::make_shared<std::string>(argv[3]);
-    auto const threads = std::max<int>(1, std::atoi(argv[4]));
+    auto const address = net::ip::make_address("0.0.0.0");
+    auto const port = static_cast<unsigned short>(std::atoi("8080"));
+    auto const doc_root = std::make_shared<std::string>("./htdocs");
+    auto const threads = std::max<int>(1, std::atoi("1"));
+
+    std::ifstream ifs_lexicon(std::string(argv[1]) + "/lexicon.txt");
+    std::ifstream ifs_index(std::string(argv[1]) + "/index.txt");
+    std::ifstream ifs_documents(std::string(argv[1]) + "/documents.txt");
+    auto const search_engine = std::make_shared<sese::SearchEngine const>(ifs_lexicon, ifs_index, ifs_documents);
 
     // The io_context is required for all I/O
     net::io_context ioc{threads};
@@ -473,7 +545,8 @@ int main(int argc, char* argv[])
     std::make_shared<listener>(
         ioc,
         tcp::endpoint{address, port},
-        doc_root)->run();
+        doc_root,
+	search_engine)->run();
 
     // Run the I/O service on the requested number of threads
     std::vector<std::thread> v;

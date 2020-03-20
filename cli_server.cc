@@ -16,9 +16,7 @@ int main(int argc, char **argv) {
   std::ifstream ifs_lexicon(std::string(argv[1]) + "/lexicon.txt");
   std::ifstream ifs_index(std::string(argv[1]) + "/index.txt");
   std::ifstream ifs_documents(std::string(argv[1]) + "/documents.txt");
-  std::cout << "Loading index file..." << std::endl;
   sese::SearchEngine search_engine(ifs_lexicon, ifs_index, ifs_documents);
-  std::cout << "Ready." << std::endl;  
   while (true) {
     std::string keywords;
     std::getline(std::cin, keywords);

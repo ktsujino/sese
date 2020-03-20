@@ -108,7 +108,7 @@ void Lexicon::setEntry(const icu::UnicodeString &token, const WordID id, const i
 }
 
 void Lexicon::load(std::istream &ist) {
-  std::cout << "Lexicon::load" << std::endl;
+  std::cout << "entered Lexicon::load" << std::endl;
   int lexicon_size;
   ist >> lexicon_size;
   std:: cout << lexicon_size << std::endl;
@@ -119,6 +119,7 @@ void Lexicon::load(std::istream &ist) {
     ist >> token >> id >> frequency;
     setEntry(token, id, frequency);
   }
+  std::cout << "finished Lexicon::load" << std::endl;
 }
 
 std::vector<WordID> LexiconBuilder::registerTokens(const std::vector<icu::UnicodeString> &tokens) {

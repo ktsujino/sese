@@ -50,8 +50,10 @@ std::vector<MatchInfo> Index::query(const QueryInfo &query_info) const {
 }
 
 void Index::load(std::istream &ist) {
+  std::cout << "entered Index::load" << std::endl;
   int posting_lists_size;
   ist >> posting_lists_size;
+  std::cout << posting_lists_size << std::endl;
   for (int word = 0; word < posting_lists_size; word++) {
     WordID word_id;
     int vector_size;
@@ -81,6 +83,7 @@ void Index::load(std::istream &ist) {
     ist >> document_id >> word_id >> term_frequency;
     term_frequency_[std::make_pair(document_id, word_id)] = term_frequency;
   }
+  std::cout << "finished Index::load" << std::endl;
 }
 
 std::vector<DocumentID> Index::calcMatchSet(const std::vector<WordID> &keywords) const {

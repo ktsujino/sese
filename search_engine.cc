@@ -21,6 +21,7 @@ SearchEngine::SearchEngine(std::istream &ist_lexicon,
   index_(ist_index),
   document_store_(ist_document_store)
 {
+  std::cout << "Search engine ready." << std::endl;
 }
 
 std::vector<Document> SearchEngine::query(const std::string &keywords) const {

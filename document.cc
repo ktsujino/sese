@@ -43,13 +43,13 @@ int DocumentStore::size() {
 }
 
 void DocumentStore::load(std::istream &ist) {
+  std::cout << "entered DocumentStore::load" << std::endl;
   std::string line;
-  std::cout << "DocumentStore::load" << std::endl;
   id2document_.clear();
   int num_documents;
   ist >> num_documents;
-  std::getline(ist, line);
   std::cout << num_documents << std::endl;
+  std::getline(ist, line);
   for (int i = 0; i < num_documents; i++) {
     std::vector<std::string> body;
     std::getline(ist, line);
@@ -67,6 +67,7 @@ void DocumentStore::load(std::istream &ist) {
     Document document(url, title, document_id, body);
     id2document_[document_id] = document;
   }
+  std::cout << "finished DocumentStore::load" << std::endl;
 }
 
 void DocumentStore::addDocument(Document document) {
